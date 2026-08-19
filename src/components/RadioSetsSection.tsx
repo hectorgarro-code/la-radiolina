@@ -21,7 +21,7 @@ const formatSeconds = (sec: number): string => {
 };
 
 const parseDurationToSeconds = (durStr?: string): number => {
-  if (!durStr) return 2700; // 45 min por defecto
+  if (!durStr) return 2700;
   const match = durStr.match(/(\d+)\s*min/i);
   if (match && match[1]) {
     return parseInt(match[1], 10) * 60;
@@ -84,6 +84,7 @@ export const RadioSetsSection: React.FC = () => {
     return 0;
   });
 
+  const [seekStartTime, setSeekStartTime] = useState<number>(currentTime);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.8);
   const [isMuted, setIsMuted] = useState<boolean>(false);
@@ -117,7 +118,7 @@ export const RadioSetsSection: React.FC = () => {
     } catch(e){}
   }, [activeSetId, currentTime, volume]);
 
-  // Timer Effect when Playing
+  // Timer Effect when Playing (Ticks every second without triggering iframe re-mount)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPlaying) {
@@ -175,6 +176,7 @@ export const RadioSetsSection: React.FC = () => {
     if (setObj.id !== activeSetId) {
       setActiveSetId(setObj.id);
       setCurrentTime(0);
+      setSeekStartTime(0);
       if (isPlaying) {
         if (!setObj.youtubeUrl) {
           playSetAudio(setObj.freqsAudio || [220, 330, 440]);
@@ -187,6 +189,7 @@ export const RadioSetsSection: React.FC = () => {
     if (isPlaying) {
       stopAudio();
     } else {
+      setSeekStartTime(currentTime);
       if (!activeSet.youtubeUrl) {
         playSetAudio(activeSet.freqsAudio || [220, 330, 440]);
       } else {
@@ -197,19 +200,20 @@ export const RadioSetsSection: React.FC = () => {
 
   const handleSeek = (newTime: number) => {
     setCurrentTime(newTime);
+    setSeekStartTime(newTime);
   };
 
   const handleSkip = (seconds: number) => {
     setCurrentTime(prev => {
-      const nextTime = prev + seconds;
-      if (nextTime < 0) return 0;
-      if (nextTime > totalDuration) return totalDuration;
+      const nextTime = Math.max(0, Math.min(totalDuration, prev + seconds));
+      setSeekStartTime(nextTime);
       return nextTime;
     });
   };
 
   const handleResetTime = () => {
     setCurrentTime(0);
+    setSeekStartTime(0);
   };
 
   const handleVolumeChange = (newVol: number) => {
@@ -233,7 +237,7 @@ export const RadioSetsSection: React.FC = () => {
             Radio Sets & Dj Melómano
           </h2>
           <p className="mt-3 text-gray-400 text-sm sm:text-base">
-            Consola de vinilos online con control de tiempo, memoria de reproducción e historias de cada género.
+            Sesiones temáticas curadas por Gastón con grandes clásicos, bandas ocultas e historia de cada género.
           </p>
 
           {/* Persistent State Saved Notification */}
@@ -242,7 +246,7 @@ export const RadioSetsSection: React.FC = () => {
               <Clock className="w-3.5 h-3.5" />
               <span>Guardado en memoria: Minuto {formatSeconds(currentTime)}</span>
               <button 
-                onClick={() => setIsPlaying(true)} 
+                onClick={toggleAudio} 
                 className="ml-2 underline font-bold hover:text-white"
               >
                 Continuar
@@ -251,13 +255,13 @@ export const RadioSetsSection: React.FC = () => {
           )}
         </div>
 
-        {/* Player Vinyl Console Unit */}
+        {/* Original Player Unit with Spinning Vinyl */}
         <div className="max-w-4xl mx-auto bg-[#161b22] border-2 border-[#21262d] rounded-3xl p-6 sm:p-10 shadow-2xl relative">
           <div className="grid md:grid-cols-12 gap-8 items-center">
             
-            {/* Vinyl Record & Tonearm Unit */}
-            <div className="md:col-span-5 flex justify-center relative">
-              <div className="relative w-56 h-56 rounded-full bg-[#050505] p-2 shadow-2xl border-4 border-[#21262d] flex items-center justify-center group overflow-hidden">
+            {/* Original Vinyl Spinning Animation */}
+            <div className="md:col-span-5 flex justify-center">
+              <div className="relative w-56 h-56 rounded-full bg-black p-2 shadow-2xl border-4 border-[#21262d] flex items-center justify-center group">
                 <div className="absolute inset-2 rounded-full border border-gray-800 opacity-60"></div>
                 <div className="absolute inset-6 rounded-full border border-gray-800 opacity-40"></div>
                 <div className="absolute inset-10 rounded-full border border-gray-800 opacity-30"></div>
@@ -275,19 +279,9 @@ export const RadioSetsSection: React.FC = () => {
                   <div className="w-2 h-2 rounded-full bg-white"></div>
                 </div>
               </div>
-
-              {/* Tonearm (Brazo de Tocadiscos Animado) */}
-              <div 
-                className="absolute top-0 right-4 w-16 h-36 pointer-events-none transition-transform duration-700 origin-top-right z-10 hidden sm:block"
-                style={{ transform: isPlaying ? 'rotate(18deg)' : 'rotate(-25deg)' }}
-              >
-                <div className="w-5 h-5 rounded-full bg-[#f59e0b] border-2 border-gray-300 ml-auto shadow-md"></div>
-                <div className="w-1.5 h-24 bg-gradient-to-b from-gray-300 via-gray-500 to-gray-700 ml-auto mr-1.5 shadow-sm"></div>
-                <div className="w-3.5 h-5 bg-[#ff6b4a] rounded-sm ml-auto mr-0.5 shadow-lg border border-black/50"></div>
-              </div>
             </div>
 
-            {/* Set Info & Playback Controls */}
+            {/* Set Info & Controls */}
             <div className="md:col-span-7 space-y-4 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className="text-xs font-mono font-bold text-[#f59e0b] bg-[#0d1117] px-2.5 py-1 rounded-md border border-[#21262d]">
@@ -329,7 +323,7 @@ export const RadioSetsSection: React.FC = () => {
                 />
               </div>
 
-              {/* Playback Controls (Play, Pause, Skip, Rewind, Volume) */}
+              {/* Playback Controls */}
               <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
                 <button
                   type="button"
@@ -356,7 +350,7 @@ export const RadioSetsSection: React.FC = () => {
                   className="bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-extrabold px-6 py-2.5 rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 text-xs"
                 >
                   {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                  <span>{isPlaying ? 'Pausar' : 'Reproducir'}</span>
+                  <span>{isPlaying ? 'Pausar Mezcla' : 'Reproducir Mezcla'}</span>
                 </button>
 
                 <button
@@ -382,7 +376,7 @@ export const RadioSetsSection: React.FC = () => {
                   </a>
                 )}
 
-                {/* Volume Slider */}
+                {/* Volume Control */}
                 <div className="flex items-center gap-2 bg-[#0d1117] border border-[#21262d] px-3 py-1.5 rounded-xl text-xs">
                   <button 
                     type="button" 
@@ -406,11 +400,11 @@ export const RadioSetsSection: React.FC = () => {
 
             </div>
 
-            {/* Hidden Audio Player for YouTube Sessions with Seeking */}
-            {isPlaying && getYouTubeEmbedUrl(activeSet.youtubeUrl, currentTime) && (
+            {/* Hidden Audio Player for YouTube Sessions (re-mounts ONLY on seekStartTime change) */}
+            {isPlaying && getYouTubeEmbedUrl(activeSet.youtubeUrl, seekStartTime) && (
               <iframe
-                key={`${activeSet.id}_${currentTime}`}
-                src={getYouTubeEmbedUrl(activeSet.youtubeUrl, currentTime)!}
+                key={`${activeSet.id}_${Math.floor(seekStartTime)}`}
+                src={getYouTubeEmbedUrl(activeSet.youtubeUrl, seekStartTime)!}
                 allow="autoplay"
                 className="hidden"
                 aria-hidden="true"
