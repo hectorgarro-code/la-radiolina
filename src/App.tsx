@@ -23,8 +23,33 @@ import {
   BookOpen,
   Users,
   Settings,
-  Lock
+  Lock,
+  Music,
+  Mic,
+  Headphones,
+  Flame
 } from 'lucide-react';
+
+export const renderInstrumentIcon = (iconName: string, className?: string, style?: React.CSSProperties) => {
+  const props = { className: className || "w-6 h-6", style };
+  switch (iconName.toLowerCase()) {
+    case 'guitar': return <Guitar {...props} />;
+    case 'keyboard': return <Keyboard {...props} />;
+    case 'drum': return <Drum {...props} />;
+    case 'disc': return <Disc {...props} />;
+    case 'umbrella': return <Umbrella {...props} />;
+    case 'sliders': return <Sliders {...props} />;
+    case 'music': return <Music {...props} />;
+    case 'mic': return <Mic {...props} />;
+    case 'headphones': return <Headphones {...props} />;
+    case 'sparkles': return <Sparkles {...props} />;
+    case 'flame': return <Flame {...props} />;
+    case 'radio': return <Radio {...props} />;
+    case 'book': return <BookOpen {...props} />;
+    case 'award': return <Award {...props} />;
+    default: return <Guitar {...props} />;
+  }
+};
 
 import { AppProvider, useAppContext } from './context/AppContext';
 import { AlumnosSection } from './components/AlumnosSection';
@@ -59,7 +84,7 @@ const DEFAULT_STATION_COLORS = [
 ];
 
 function MainContent() {
-  const { siteTexts, dialChannels, setIsAdminOpen, isAdminLoggedIn } = useAppContext();
+  const { siteTexts, dialChannels, estudioInstrumentos, setIsAdminOpen, isAdminLoggedIn } = useAppContext();
 
   // Mobile Menu State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -616,36 +641,21 @@ function MainContent() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div onClick={() => quickSelect('Guitarra')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Guitar className="w-7 h-7 text-[#f59e0b] mb-3" />
-              <h4 className="font-bold text-white text-base">Guitarra</h4>
-              <p className="text-xs text-gray-400 mt-1">Criolla, Acústica y Eléctrica</p>
-            </div>
-            <div onClick={() => quickSelect('Piano / Teclado')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Keyboard className="w-7 h-7 text-cyan-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Piano / Teclado</h4>
-              <p className="text-xs text-gray-400 mt-1">Armonía y canciones</p>
-            </div>
-            <div onClick={() => quickSelect('Batería')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Drum className="w-7 h-7 text-[#ff6b4a] mb-3" />
-              <h4 className="font-bold text-white text-base">Batería & Ritmo</h4>
-              <p className="text-xs text-gray-400 mt-1">Groove e independencia</p>
-            </div>
-            <div onClick={() => quickSelect('Bajo Eléctrico')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Disc className="w-7 h-7 text-purple-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Bajo Eléctrico</h4>
-              <p className="text-xs text-gray-400 mt-1">La base de la banda</p>
-            </div>
-            <div onClick={() => quickSelect('Ukelele')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Umbrella className="w-7 h-7 text-emerald-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Ukelele</h4>
-              <p className="text-xs text-gray-400 mt-1">Ideal iniciación rápida</p>
-            </div>
-            <div onClick={() => quickSelect('Composición')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Sliders className="w-7 h-7 text-indigo-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Composición</h4>
-              <p className="text-xs text-gray-400 mt-1">Grabación de maquetas</p>
-            </div>
+            {estudioInstrumentos.map((inst) => (
+              <div
+                key={inst.id}
+                onClick={() => quickSelect(inst.nombre)}
+                className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1 group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="mb-3">
+                    {renderInstrumentIcon(inst.icono, "w-7 h-7", { color: inst.color || '#f59e0b' })}
+                  </div>
+                  <h4 className="font-bold text-white text-base group-hover:text-[#f59e0b] transition-colors">{inst.nombre}</h4>
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">{inst.descripcion}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

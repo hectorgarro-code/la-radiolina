@@ -47,6 +47,23 @@ const DEFAULT_DIAL_CHANNELS: DialChannel[] = [
   { freq: '106.3 FM', genre: 'Groove & Ritmo', instruments: 'Batería / Percusión / Bajo', freqs: [110, 146, 164, 220], color: '#a855f7' }
 ];
 
+export interface EstudioInstrumento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  color?: string;
+}
+
+const DEFAULT_ESTUDIO_INSTRUMENTOS: EstudioInstrumento[] = [
+  { id: 'inst-1', nombre: 'Guitarra', descripcion: 'Criolla, Acústica y Eléctrica', icono: 'guitar', color: '#f59e0b' },
+  { id: 'inst-2', nombre: 'Piano / Teclado', descripcion: 'Armonía y canciones', icono: 'keyboard', color: '#06b6d4' },
+  { id: 'inst-3', nombre: 'Batería & Ritmo', descripcion: 'Groove e independencia', icono: 'drum', color: '#ff6b4a' },
+  { id: 'inst-4', nombre: 'Bajo Eléctrico', descripcion: 'La base de la banda', icono: 'disc', color: '#a855f7' },
+  { id: 'inst-5', nombre: 'Ukelele', descripcion: 'Ideal iniciación rápida', icono: 'umbrella', color: '#10b981' },
+  { id: 'inst-6', nombre: 'Composición', descripcion: 'Grabación de maquetas', icono: 'sliders', color: '#6366f1' },
+];
+
 interface AppContextType {
   isAdminOpen: boolean;
   setIsAdminOpen: (val: boolean) => void;
@@ -57,6 +74,11 @@ interface AppContextType {
   siteTexts: SiteTexts;
   updateSiteTexts: (texts: Partial<SiteTexts>) => void;
   
+  estudioInstrumentos: EstudioInstrumento[];
+  addEstudioInstrumento: (item: Omit<EstudioInstrumento, 'id'>) => void;
+  updateEstudioInstrumento: (id: string, item: Partial<EstudioInstrumento>) => void;
+  deleteEstudioInstrumento: (id: string) => void;
+
   alumnos: AlumnoItem[];
   addAlumno: (item: Omit<AlumnoItem, 'id'>) => void;
   updateAlumno: (id: string, item: Partial<AlumnoItem>) => void;
@@ -68,7 +90,7 @@ interface AppContextType {
   deleteRecurso: (id: string) => void;
   
   dialChannels: DialChannel[];
-  updateDialChannel: (index: number, channel: DialChannel) => void;
+  updateDialChannel: (index: number, channel: Partial<DialChannel>) => void;
   
   radioSets: RadioSetItem[];
   addRadioSet: (item: Omit<RadioSetItem, 'id'>) => void;
@@ -91,6 +113,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [siteTexts, setSiteTexts] = useState<SiteTexts>(() => {
     const saved = localStorage.getItem('radiolina_texts');
     return saved ? JSON.parse(saved) : DEFAULT_SITE_TEXTS;
+  });
+
+  const [estudioInstrumentos, setEstudioInstrumentos] = useState<EstudioInstrumento[]>(() => {
+    const saved = localStorage.getItem('radiolina_estudio_inst');
+    return saved ? JSON.parse(saved) : DEFAULT_ESTUDIO_INSTRUMENTOS;
   });
 
   const [alumnos, setAlumnos] = useState<AlumnoItem[]>(() => {
@@ -122,6 +149,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('radiolina_texts', JSON.stringify(siteTexts));
   }, [siteTexts]);
+
+  useEffect(() => {
+    localStorage.setItem('radiolina_estudio_inst', JSON.stringify(estudioInstrumentos));
+  }, [estudioInstrumentos]);
 
   useEffect(() => {
     localStorage.setItem('radiolina_alumnos', JSON.stringify(alumnos));
@@ -160,6 +191,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSiteTexts(prev => ({ ...prev, ...texts }));
   };
 
+  const addEstudioInstrumento = (item: Omit<EstudioInstrumento, 'id'>) => {
+    const newItem: EstudioInstrumento = { ...item, id: Date.now().toString() };
+    setEstudioInstrumentos(prev => [...prev, newItem]);
+  };
+
+  const updateEstudioInstrumento = (id: string, item: Partial<EstudioInstrumento>) => {
+    setEstudioInstrumentos(prev => prev.map(inst => inst.id === id ? { ...inst, ...item } : inst));
+  };
+
+  const deleteEstudioInstrumento = (id: string) => {
+    setEstudioInstrumentos(prev => prev.filter(inst => inst.id !== id));
+  };
+
   const addAlumno = (item: Omit<AlumnoItem, 'id'>) => {
     const newItem: AlumnoItem = { ...item, id: Date.now().toString() };
     setAlumnos(prev => [newItem, ...prev]);
@@ -186,10 +230,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecursos(prev => prev.filter(r => r.id !== id));
   };
 
-  const updateDialChannel = (index: number, channel: DialChannel) => {
+  const updateDialChannel = (index: number, channel: Partial<DialChannel>) => {
     setDialChannels(prev => {
       const copy = [...prev];
-      copy[index] = channel;
+      copy[index] = { ...copy[index], ...channel };
       return copy;
     });
   };
@@ -213,6 +257,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetToDefaults = () => {
     setSiteTexts(DEFAULT_SITE_TEXTS);
+    setEstudioInstrumentos(DEFAULT_ESTUDIO_INSTRUMENTOS);
     setAlumnos(MOCK_ALUMNOS);
     setRecursos(MOCK_RECURSOS);
     setDialChannels(DEFAULT_DIAL_CHANNELS);
@@ -230,6 +275,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logoutAdmin,
       siteTexts,
       updateSiteTexts,
+      estudioInstrumentos,
+      addEstudioInstrumento,
+      updateEstudioInstrumento,
+      deleteEstudioInstrumento,
       alumnos,
       addAlumno,
       updateAlumno,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, EstudioInstrumento } from '../context/AppContext';
+import { renderInstrumentIcon } from '../App';
 import { 
   X, 
   Settings, 
@@ -14,7 +15,8 @@ import {
   RotateCcw,
   CheckCircle2,
   FileText,
-  Pencil
+  Pencil,
+  Guitar
 } from 'lucide-react';
 import { AlumnoItem, RecursoItem, RadioSetItem } from '../data/mockData';
 
@@ -26,6 +28,10 @@ export const AdminPanel: React.FC = () => {
     logoutAdmin,
     siteTexts,
     updateSiteTexts,
+    estudioInstrumentos,
+    addEstudioInstrumento,
+    updateEstudioInstrumento,
+    deleteEstudioInstrumento,
     alumnos,
     addAlumno,
     updateAlumno,
@@ -83,6 +89,19 @@ export const AdminPanel: React.FC = () => {
     freqsAudio: [220, 330, 440, 550],
     youtubeUrl: ''
   });
+
+  const AVAILABLE_ICONS = ['guitar', 'keyboard', 'drum', 'disc', 'umbrella', 'sliders', 'music', 'mic', 'headphones', 'sparkles', 'flame', 'radio', 'book', 'award'];
+  const AVAILABLE_COLORS = ['#f59e0b', '#06b6d4', '#ff6b4a', '#a855f7', '#10b981', '#6366f1', '#ec4899', '#ef4444'];
+
+  const [newEstudioInst, setNewEstudioInst] = useState({
+    nombre: '',
+    descripcion: '',
+    icono: 'guitar',
+    color: '#f59e0b'
+  });
+
+  const [editingInstId, setEditingInstId] = useState<string | null>(null);
+  const [editingInstData, setEditingInstData] = useState<Partial<EstudioInstrumento>>({});
 
   const [editingAlumnoId, setEditingAlumnoId] = useState<string | null>(null);
   const [editingAlumnoData, setEditingAlumnoData] = useState<Partial<AlumnoItem>>({});
@@ -182,6 +201,19 @@ export const AdminPanel: React.FC = () => {
       youtubeUrl: ''
     });
     showNotify('¡Radio Set agregado!');
+  };
+
+  const handleAddEstudioInst = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEstudioInst.nombre) return;
+    addEstudioInstrumento(newEstudioInst);
+    setNewEstudioInst({
+      nombre: '',
+      descripcion: '',
+      icono: 'guitar',
+      color: '#f59e0b'
+    });
+    showNotify('¡Instrumento / Lección agregada al estudio!');
   };
 
   return (
@@ -328,8 +360,217 @@ export const AdminPanel: React.FC = () => {
                 type="submit"
                 className="bg-[#f59e0b] hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-xl text-xs flex items-center gap-2"
               >
-                <Save className="w-4 h-4" /> Guardar Textos
+                <Save className="w-4 h-4" /> Guardar Textos Principales
               </button>
+
+              {/* Sección Instrumentos / Lecciones del Estudio */}
+              <div className="pt-8 border-t border-[#21262d] space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-[#f59e0b] uppercase tracking-wider">Instrumentos y Lecciones del Estudio</h4>
+                  <p className="text-xs text-gray-400">Podés agregar, editar o eliminar los instrumentos/clases disponibles y asignarles un ícono y color.</p>
+                </div>
+
+                {/* Form Agregar Instrumento */}
+                <form onSubmit={handleAddEstudioInst} className="bg-[#0d1117] p-5 rounded-2xl border border-[#21262d] space-y-4">
+                  <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Plus className="w-4 h-4" /> Agregar Nuevo Instrumento / Lección
+                  </h5>
+
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">Nombre (ej: Guitarra Española / Flamenco)</label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Guitarra Española"
+                        value={newEstudioInst.nombre}
+                        onChange={(e) => setNewEstudioInst({ ...newEstudioInst, nombre: e.target.value })}
+                        className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">Descripción corta</label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Criolla, Flamenco y Clásico"
+                        value={newEstudioInst.descripcion}
+                        onChange={(e) => setNewEstudioInst({ ...newEstudioInst, descripcion: e.target.value })}
+                        className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Selector de Ícono y Color */}
+                  <div className="grid sm:grid-cols-2 gap-4 pt-1">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-2">Elegir Ícono Ilustrativo</label>
+                      <div className="flex flex-wrap gap-2 bg-[#161b22] p-3 rounded-xl border border-[#21262d]">
+                        {AVAILABLE_ICONS.map((ic) => (
+                          <button
+                            key={ic}
+                            type="button"
+                            onClick={() => setNewEstudioInst({ ...newEstudioInst, icono: ic })}
+                            className={`p-2 rounded-lg border transition-all ${
+                              newEstudioInst.icono === ic
+                                ? 'bg-[#f59e0b]/20 border-[#f59e0b] text-white scale-110'
+                                : 'bg-[#0d1117] border-[#21262d] text-gray-400 hover:text-white'
+                            }`}
+                            title={ic}
+                          >
+                            {renderInstrumentIcon(ic, "w-4 h-4", { color: newEstudioInst.icono === ic ? newEstudioInst.color : undefined })}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-2">Color Destacado</label>
+                      <div className="flex flex-wrap items-center gap-2 bg-[#161b22] p-3.5 rounded-xl border border-[#21262d]">
+                        {AVAILABLE_COLORS.map((hex) => (
+                          <button
+                            key={hex}
+                            type="button"
+                            onClick={() => setNewEstudioInst({ ...newEstudioInst, color: hex })}
+                            style={{ backgroundColor: hex }}
+                            className={`w-6 h-6 rounded-full transition-transform ${
+                              newEstudioInst.color === hex ? 'scale-125 ring-2 ring-white' : 'opacity-70 hover:opacity-100'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2">
+                    <Plus className="w-4 h-4" /> Agregar Instrumento al Estudio
+                  </button>
+                </form>
+
+                {/* Lista de Instrumentos Actuales */}
+                <div className="space-y-3">
+                  <h5 className="text-xs font-bold text-gray-400 uppercase">Instrumentos / Lecciones Publicadas</h5>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {estudioInstrumentos.map((inst) => (
+                      editingInstId === inst.id ? (
+                        <div key={inst.id} className="bg-[#161b22] p-4 rounded-xl border border-amber-500/50 space-y-3 sm:col-span-2">
+                          <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                            <span className="text-xs font-bold text-amber-400">Editando: {inst.nombre}</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateEstudioInstrumento(inst.id, editingInstData);
+                                  setEditingInstId(null);
+                                  showNotify('¡Instrumento actualizado!');
+                                }}
+                                className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                              >
+                                <Save className="w-3.5 h-3.5" /> Guardar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingInstId(null)}
+                                className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                              >
+                                <X className="w-3.5 h-3.5" /> Cancelar
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] text-gray-400 block mb-1">Nombre</label>
+                              <input
+                                type="text"
+                                value={editingInstData.nombre || ''}
+                                onChange={(e) => setEditingInstData({ ...editingInstData, nombre: e.target.value })}
+                                className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                              <input
+                                type="text"
+                                value={editingInstData.descripcion || ''}
+                                onChange={(e) => setEditingInstData({ ...editingInstData, descripcion: e.target.value })}
+                                className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] text-gray-400 block mb-1">Ícono</label>
+                              <div className="flex flex-wrap gap-1.5 bg-[#0d1117] p-2 rounded-lg border border-[#21262d]">
+                                {AVAILABLE_ICONS.map((ic) => (
+                                  <button
+                                    key={ic}
+                                    type="button"
+                                    onClick={() => setEditingInstData({ ...editingInstData, icono: ic })}
+                                    className={`p-1.5 rounded border transition-all ${
+                                      (editingInstData.icono || inst.icono) === ic
+                                        ? 'bg-amber-500/20 border-amber-500 text-white'
+                                        : 'bg-[#161b22] border-[#21262d] text-gray-400'
+                                    }`}
+                                  >
+                                    {renderInstrumentIcon(ic, "w-3.5 h-3.5")}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-gray-400 block mb-1">Color</label>
+                              <div className="flex items-center gap-1.5 bg-[#0d1117] p-2.5 rounded-lg border border-[#21262d]">
+                                {AVAILABLE_COLORS.map((hex) => (
+                                  <button
+                                    key={hex}
+                                    type="button"
+                                    onClick={() => setEditingInstData({ ...editingInstData, color: hex })}
+                                    style={{ backgroundColor: hex }}
+                                    className={`w-5 h-5 rounded-full transition-transform ${
+                                      (editingInstData.color || inst.color) === hex ? 'scale-125 ring-2 ring-white' : 'opacity-70'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div key={inst.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#21262d]">
+                              {renderInstrumentIcon(inst.icono, "w-5 h-5", { color: inst.color || '#f59e0b' })}
+                            </div>
+                            <div>
+                              <h5 className="font-bold text-white text-xs">{inst.nombre}</h5>
+                              <p className="text-[11px] text-gray-500 font-light truncate max-w-[200px]">{inst.descripcion}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => { setEditingInstId(inst.id); setEditingInstData(inst); }}
+                              className="text-gray-400 hover:text-amber-400 p-1.5 transition-colors"
+                              title="Editar"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteEstudioInstrumento(inst.id)}
+                              className="text-gray-500 hover:text-red-400 p-1.5 transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              </div>
             </form>
           )}
 
