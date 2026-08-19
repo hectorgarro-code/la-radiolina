@@ -78,7 +78,7 @@ export const AdminPanel: React.FC = () => {
     frecuencia: '95.5 FM',
     descripcion: '',
     duracion: '45 min',
-    artistas: ['Artista 1', 'Artista 2'],
+    artistasInput: 'Robert Johnson, Muddy Waters, B.B. King',
     portadaUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
     freqsAudio: [220, 330, 440, 550],
     youtubeUrl: ''
@@ -156,14 +156,27 @@ export const AdminPanel: React.FC = () => {
   const handleAddRadioSet = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRadioSet.titulo) return;
-    addRadioSet(newRadioSet);
+    const artistas = newRadioSet.artistasInput
+      ? newRadioSet.artistasInput.split(',').map(a => a.trim()).filter(Boolean)
+      : ['Varios Artistas'];
+    addRadioSet({
+      titulo: newRadioSet.titulo,
+      genero: newRadioSet.genero,
+      frecuencia: newRadioSet.frecuencia,
+      descripcion: newRadioSet.descripcion,
+      duracion: newRadioSet.duracion,
+      artistas,
+      portadaUrl: newRadioSet.portadaUrl,
+      freqsAudio: newRadioSet.freqsAudio,
+      youtubeUrl: newRadioSet.youtubeUrl
+    });
     setNewRadioSet({
       titulo: '',
       genero: 'Rock & Blues',
       frecuencia: '95.5 FM',
       descripcion: '',
       duracion: '45 min',
-      artistas: ['Artista 1', 'Artista 2'],
+      artistasInput: 'Robert Johnson, Muddy Waters, B.B. King',
       portadaUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
       freqsAudio: [220, 330, 440, 550],
       youtubeUrl: ''
@@ -844,14 +857,25 @@ export const AdminPanel: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <input
-                    type="url"
-                    placeholder="Enlace de YouTube de la sesión (video o playlist, ej: https://www.youtube.com/watch?v=... o list=...)"
-                    value={newRadioSet.youtubeUrl}
-                    onChange={(e) => setNewRadioSet({ ...newRadioSet, youtubeUrl: e.target.value })}
-                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
-                  />
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="url"
+                      placeholder="Enlace de YouTube de la sesión (video o playlist, ej: https://www.youtube.com/watch?v=... o list=...)"
+                      value={newRadioSet.youtubeUrl}
+                      onChange={(e) => setNewRadioSet({ ...newRadioSet, youtubeUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Artistas incluidos (separados por coma, ej: B.B. King, Muddy Waters)"
+                      value={newRadioSet.artistasInput}
+                      onChange={(e) => setNewRadioSet({ ...newRadioSet, artistasInput: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-purple-400"
+                    />
+                  </div>
                 </div>
 
                 <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-black font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2">
@@ -869,7 +893,11 @@ export const AdminPanel: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
-                              updateRadioSet(s.id, editingRadioSetData);
+                              const artistas = (editingRadioSetData as any).artistasInput !== undefined
+                                ? (editingRadioSetData as any).artistasInput.split(',').map((a: string) => a.trim()).filter(Boolean)
+                                : (editingRadioSetData.artistas || []);
+                              const { artistasInput, ...dataToSave } = editingRadioSetData as any;
+                              updateRadioSet(s.id, { ...dataToSave, artistas });
                               setEditingRadioSetId(null);
                               showNotify('¡Radio Set actualizado!');
                             }}
@@ -923,9 +951,9 @@ export const AdminPanel: React.FC = () => {
                           className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
                         />
                       </div>
-                      <div className="grid sm:grid-cols-2 gap-2">
+                      <div className="grid sm:grid-cols-3 gap-2">
                         <div>
-                          <label className="text-[10px] text-gray-400 block mb-1">Enlace de YouTube (video o playlist)</label>
+                          <label className="text-[10px] text-gray-400 block mb-1">Enlace YouTube</label>
                           <input
                             type="text"
                             value={editingRadioSetData.youtubeUrl || ''}
@@ -940,6 +968,15 @@ export const AdminPanel: React.FC = () => {
                             value={editingRadioSetData.duracion || ''}
                             onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, duracion: e.target.value })}
                             className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Artistas Incluidos (por coma)</label>
+                          <input
+                            type="text"
+                            value={(editingRadioSetData as any).artistasInput !== undefined ? (editingRadioSetData as any).artistasInput : (editingRadioSetData.artistas ? editingRadioSetData.artistas.join(', ') : '')}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, artistasInput: e.target.value } as any)}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-purple-400"
                           />
                         </div>
                       </div>
