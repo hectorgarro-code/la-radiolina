@@ -91,6 +91,8 @@ export const AdminPanel: React.FC = () => {
   const [editingRadioSetId, setEditingRadioSetId] = useState<string | null>(null);
   const [editingRadioSetData, setEditingRadioSetData] = useState<Partial<RadioSetItem>>({});
 
+  if (!isAdminOpen || !isAdminLoggedIn) return null;
+
   const showNotify = (msg: string) => {
     setSaveNotification(msg);
     setTimeout(() => setSaveNotification(null), 2500);
@@ -183,25 +185,15 @@ export const AdminPanel: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                if (confirm('¿Restablecer todos los datos originales de fábrica?')) {
-                  resetToDefaults();
-                  showNotify('¡Datos restablecidos!');
-                }
-              }}
-              className="text-xs text-gray-400 hover:text-red-400 flex items-center gap-1 bg-[#161b22] px-3 py-1.5 rounded-lg border border-[#21262d]"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Restablecer Todo
-            </button>
-            <button
               onClick={logoutAdmin}
-              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-bold px-3.5 py-1.5 rounded-lg border border-red-500/30"
+              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-bold px-3.5 py-1.5 rounded-lg border border-red-500/30 transition-colors"
             >
               Cerrar Sesión
             </button>
             <button
               onClick={() => setIsAdminOpen(false)}
-              className="text-gray-400 hover:text-white p-1"
+              className="text-gray-400 hover:text-white p-1 transition-colors"
+              title="Cerrar panel"
             >
               <X className="w-6 h-6" />
             </button>
