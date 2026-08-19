@@ -9,8 +9,8 @@
     -webkit-backdrop-filter: blur(12px);
   }
   .hero-bg {
-    background: linear-gradient(to bottom, rgba(13, 17, 23, 0.7), rgba(13, 17, 23, 1)), 
-                url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1600&auto=format&fit=crop');
+    background: linear-gradient(to bottom, rgba(13, 17, 23, 0.75), rgba(13, 17, 23, 1)), 
+                url('/hero_electric_bass.jpg');
     background-size: cover;
     background-position: center;
   }

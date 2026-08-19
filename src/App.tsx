@@ -435,8 +435,8 @@ function MainContent() {
             <div className="relative bg-[#161b22] border border-[#21262d] rounded-3xl p-6 shadow-2xl">
               <div className="relative h-72 rounded-2xl overflow-hidden mb-5">
                 <img 
-                  src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop" 
-                  alt="La Radiolina Espacio Musical" 
+                  src="/hero_electric_bass.jpg" 
+                  alt="La Radiolina Espacio Musical - Bajo Eléctrico" 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent"></div>
