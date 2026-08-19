@@ -24,6 +24,7 @@ export interface SiteTexts {
   whatsappPhone: string;
   anualPriceInfo: string;
   veranoPriceInfo: string;
+  discordUrl: string;
 }
 
 const DEFAULT_SITE_TEXTS: SiteTexts = {
@@ -32,13 +33,14 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   heroDescription: 'En La Radiolina contás con un estudio totalmente equipado. Venís sin nada, elegís tu instrumento preferido y aprendés a tu propio ritmo con clases personalizadas.',
   whatsappPhone: '5491112345678',
   anualPriceInfo: 'Consultar Arancel Mensual',
-  veranoPriceInfo: 'Consultar Disponibilidad Verano'
+  veranoPriceInfo: 'Consultar Disponibilidad Verano',
+  discordUrl: 'https://discord.gg/radiolina'
 };
 
 const DEFAULT_DIAL_CHANNELS: DialChannel[] = [
   { freq: '88.5 FM', genre: 'Rock & Blues', instruments: 'Guitarra Eléctrica / Bajo / Batería', freqs: [330, 392, 493, 587] },
-  { freq: '94.1 FM', genre: 'Jazz & Bossa', instruments: 'Piano / Saxo / Bajos suaves', freqs: [261, 329, 392, 493] },
-  { freq: '102.7 FM', genre: 'Pop & Acústico', instruments: 'Guitarra Criolla / Ukelele / Canto', freqs: [293, 370, 440, 554] },
+  { freq: '94.1 FM', genre: 'Jazz & Bossa', instruments: 'Piano / Teclado / Bajos suaves', freqs: [261, 329, 392, 493] },
+  { freq: '102.7 FM', genre: 'Pop & Acústico', instruments: 'Guitarra Criolla / Ukelele / Teclado', freqs: [293, 370, 440, 554] },
   { freq: '106.3 FM', genre: 'Groove & Ritmo', instruments: 'Batería / Percusión / Bajo', freqs: [110, 146, 164, 220] }
 ];
 

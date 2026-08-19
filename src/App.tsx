@@ -7,8 +7,6 @@ import {
   Guitar, 
   Drum, 
   Keyboard, 
-  Mic, 
-  Wind, 
   Sliders, 
   Sun, 
   Check, 
@@ -372,7 +370,7 @@ function MainContent() {
               <div className="space-y-2.5">
                 <div className="flex items-center gap-3 text-xs text-gray-300">
                   <CircleCheck className="w-4 h-4 text-[#f59e0b]" />
-                  <span>Guitarra, Piano, Bajo, Batería, Ukelele, Canto y Vientos</span>
+                  <span>Guitarra, Piano, Bajo, Batería y Ukelele</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-300">
                   <CircleCheck className="w-4 h-4 text-[#f59e0b]" />
@@ -579,16 +577,6 @@ function MainContent() {
               <h4 className="font-bold text-white text-base">Ukelele</h4>
               <p className="text-xs text-gray-400 mt-1">Ideal iniciación rápida</p>
             </div>
-            <div onClick={() => quickSelect('Canto')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Mic className="w-7 h-7 text-blue-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Canto & Voz</h4>
-              <p className="text-xs text-gray-400 mt-1">Técnica y acompañamiento</p>
-            </div>
-            <div onClick={() => quickSelect('Saxo / Vientos')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
-              <Wind className="w-7 h-7 text-yellow-400 mb-3" />
-              <h4 className="font-bold text-white text-base">Saxo & Vientos</h4>
-              <p className="text-xs text-gray-400 mt-1">Expresión y escala</p>
-            </div>
             <div onClick={() => quickSelect('Composición')} className="bg-[#161b22] border border-[#21262d] hover:border-[#f59e0b]/60 p-5 rounded-2xl cursor-pointer transition-all hover:-translate-y-1">
               <Sliders className="w-7 h-7 text-indigo-400 mb-3" />
               <h4 className="font-bold text-white text-base">Composición</h4>
@@ -712,8 +700,6 @@ function MainContent() {
                 <option value="Batería">Batería & Percusión</option>
                 <option value="Bajo Eléctrico">Bajo Eléctrico</option>
                 <option value="Ukelele">Ukelele</option>
-                <option value="Canto">Canto & Voz</option>
-                <option value="Saxo / Vientos">Saxo / Vientos</option>
                 <option value="Composición">Composición / Producción</option>
                 <option value="Probar Varios">Quiero probar varios instrumentos</option>
               </select>

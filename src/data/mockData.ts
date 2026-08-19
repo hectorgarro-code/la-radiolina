@@ -70,9 +70,9 @@ export const MOCK_ALUMNOS: AlumnoItem[] = [
   {
     id: '3',
     nombre: 'Lucas & Profe',
-    instrumento: 'Piano & Canto',
+    instrumento: 'Piano & Teclado',
     titulo: 'Acompañamiento en Vivo: "Isn\'t She Lovely"',
-    descripcion: 'Dúo de teclado rítmico y modulación vocal grabado directo del mixer.',
+    descripcion: 'Dúo de teclado rítmico y arreglos armónicos grabado directo del mixer.',
     duracion: '3:05',
     fecha: 'Agosto 2026',
     imagenUrl: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?q=80&w=600&auto=format&fit=crop',

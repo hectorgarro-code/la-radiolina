@@ -286,6 +286,16 @@ export const AdminPanel: React.FC = () => {
                     className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Enlace / Invitación a Canal de Discord</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: https://discord.gg/radiolina"
+                    value={siteTexts.discordUrl || ''}
+                    onChange={(e) => updateSiteTexts({ discordUrl: e.target.value })}
+                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#5865F2]"
+                  />
+                </div>
               </div>
 
               <button
@@ -589,6 +599,17 @@ export const AdminPanel: React.FC = () => {
                     className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-300 mb-1">Enlace al Canal de Discord del Club</label>
+                <input
+                  type="text"
+                  placeholder="https://discord.gg/radiolina"
+                  value={siteTexts.discordUrl || ''}
+                  onChange={(e) => updateSiteTexts({ discordUrl: e.target.value })}
+                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#5865F2]"
+                />
               </div>
 
               <button
