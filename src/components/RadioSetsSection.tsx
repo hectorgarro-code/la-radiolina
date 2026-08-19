@@ -1,6 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Disc, Play, Pause, Radio, Volume2 } from 'lucide-react';
+import { Disc, Play, Pause, Radio, Volume2, Youtube } from 'lucide-react';
+
+const getYouTubeEmbedUrl = (url?: string): string | null => {
+  if (!url) return null;
+  try {
+    if (url.includes('list=')) {
+      const listMatch = url.match(/[?&]list=([^&]+)/);
+      if (listMatch && listMatch[1]) {
+        return `https://www.youtube.com/embed/videoseries?list=${listMatch[1]}&autoplay=1&enablejsapi=1`;
+      }
+    }
+    const videoMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (videoMatch && videoMatch[1]) {
+      return `https://www.youtube.com/embed/${videoMatch[1]}?autoplay=1&enablejsapi=1`;
+    }
+  } catch (e) {
+    console.error('Error parsing YouTube URL:', e);
+  }
+  return null;
+};
 
 export const RadioSetsSection: React.FC = () => {
   const { radioSets } = useAppContext();
@@ -63,7 +82,9 @@ export const RadioSetsSection: React.FC = () => {
   const handleSelectSet = (setObj: typeof radioSets[0]) => {
     setActiveSetId(setObj.id);
     if (isPlaying) {
-      playSetAudio(setObj.freqsAudio || [220, 330, 440]);
+      if (!setObj.youtubeUrl) {
+        playSetAudio(setObj.freqsAudio || [220, 330, 440]);
+      }
     }
   };
 
@@ -71,7 +92,11 @@ export const RadioSetsSection: React.FC = () => {
     if (isPlaying) {
       stopAudio();
     } else {
-      playSetAudio(activeSet.freqsAudio || [220, 330, 440]);
+      if (!activeSet.youtubeUrl) {
+        playSetAudio(activeSet.freqsAudio || [220, 330, 440]);
+      } else {
+        setIsPlaying(true);
+      }
     }
   };
 
@@ -146,7 +171,7 @@ export const RadioSetsSection: React.FC = () => {
               </div>
 
               {/* Play Control */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
                 <button
                   onClick={toggleAudio}
                   className="w-full sm:w-auto bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-extrabold px-8 py-3.5 rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 text-sm"
@@ -155,12 +180,36 @@ export const RadioSetsSection: React.FC = () => {
                   <span>{isPlaying ? 'Pausar Mezcla' : 'Reproducir Mezcla'}</span>
                 </button>
 
+                {activeSet.youtubeUrl && (
+                  <a
+                    href={activeSet.youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-400 font-bold px-5 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-xs"
+                    title="Ver sesión completa en YouTube"
+                  >
+                    <Youtube className="w-4 h-4 text-red-500" />
+                    <span>Ver en YouTube</span>
+                  </a>
+                )}
+
                 <div className="text-xs font-mono text-gray-400 flex items-center gap-2">
                   <Volume2 className="w-4 h-4 text-[#f59e0b]" />
                   <span>Duración: {activeSet.duracion}</span>
                 </div>
               </div>
             </div>
+
+            {/* Hidden Audio Player for YouTube Sessions */}
+            {isPlaying && getYouTubeEmbedUrl(activeSet.youtubeUrl) && (
+              <iframe
+                src={getYouTubeEmbedUrl(activeSet.youtubeUrl)!}
+                allow="autoplay"
+                className="hidden"
+                aria-hidden="true"
+                title="YouTube Audio Player"
+              />
+            )}
 
           </div>
 
@@ -179,8 +228,13 @@ export const RadioSetsSection: React.FC = () => {
                   }`}
                 >
                   <Disc className={`w-5 h-5 shrink-0 ${isSelected ? 'text-[#f59e0b] animate-pulse' : 'text-gray-500'}`} />
-                  <div className="truncate">
-                    <div className="font-bold text-white truncate">{setObj.titulo}</div>
+                  <div className="truncate flex-1">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="font-bold text-white truncate">{setObj.titulo}</span>
+                      {setObj.youtubeUrl && (
+                        <Youtube className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      )}
+                    </div>
                     <div className="text-[10px] text-gray-500">{setObj.genero}</div>
                   </div>
                 </button>

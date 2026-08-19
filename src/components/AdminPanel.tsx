@@ -73,7 +73,8 @@ export const AdminPanel: React.FC = () => {
     duracion: '45 min',
     artistas: ['Artista 1', 'Artista 2'],
     portadaUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
-    freqsAudio: [220, 330, 440, 550]
+    freqsAudio: [220, 330, 440, 550],
+    youtubeUrl: ''
   });
 
   if (!isAdminOpen || !isAdminLoggedIn) return null;
@@ -133,7 +134,8 @@ export const AdminPanel: React.FC = () => {
       duracion: '45 min',
       artistas: ['Artista 1', 'Artista 2'],
       portadaUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
-      freqsAudio: [220, 330, 440, 550]
+      freqsAudio: [220, 330, 440, 550],
+      youtubeUrl: ''
     });
     showNotify('¡Radio Set agregado!');
   };
@@ -539,13 +541,25 @@ export const AdminPanel: React.FC = () => {
                   />
                 </div>
 
-                <textarea
-                  rows={2}
-                  placeholder="Descripción del set de música..."
-                  value={newRadioSet.descripcion}
-                  onChange={(e) => setNewRadioSet({ ...newRadioSet, descripcion: e.target.value })}
-                  className="w-full bg-[#161b22] border border-[#21262d] rounded-xl p-3 text-white text-xs"
-                />
+                <div>
+                  <textarea
+                    rows={2}
+                    placeholder="Descripción del set de música..."
+                    value={newRadioSet.descripcion}
+                    onChange={(e) => setNewRadioSet({ ...newRadioSet, descripcion: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl p-3 text-white text-xs"
+                  />
+                </div>
+
+                <div>
+                  <input
+                    type="url"
+                    placeholder="Enlace de YouTube de la sesión (video o playlist, ej: https://www.youtube.com/watch?v=... o list=...)"
+                    value={newRadioSet.youtubeUrl}
+                    onChange={(e) => setNewRadioSet({ ...newRadioSet, youtubeUrl: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                  />
+                </div>
 
                 <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-black font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2">
                   <Plus className="w-4 h-4" /> Publicar Radio Set
@@ -557,7 +571,14 @@ export const AdminPanel: React.FC = () => {
                 {radioSets.map((s) => (
                   <div key={s.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
                     <div>
-                      <span className="text-xs font-bold text-purple-400">{s.frecuencia} - {s.genero}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-purple-400">{s.frecuencia} - {s.genero}</span>
+                        {s.youtubeUrl && (
+                          <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
+                            YouTube Audio
+                          </span>
+                        )}
+                      </div>
                       <h5 className="font-bold text-white text-sm">{s.titulo}</h5>
                     </div>
                     <button

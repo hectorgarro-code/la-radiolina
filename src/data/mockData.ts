@@ -33,6 +33,7 @@ export interface RadioSetItem {
   artistas: string[];
   portadaUrl: string;
   freqsAudio: number[];
+  youtubeUrl?: string;
 }
 
 export interface EventoClub {
@@ -140,7 +141,8 @@ export const MOCK_RADIO_SETS: RadioSetItem[] = [
     duracion: '45 min',
     artistas: ['Robert Johnson', 'Muddy Waters', 'B.B. King', 'Howlin\' Wolf'],
     portadaUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
-    freqsAudio: [220, 277, 330, 392]
+    freqsAudio: [220, 277, 330, 392],
+    youtubeUrl: 'https://www.youtube.com/watch?v=5aK7XnOnd3E'
   },
   {
     id: 'set-2',
@@ -151,7 +153,8 @@ export const MOCK_RADIO_SETS: RadioSetItem[] = [
     duracion: '52 min',
     artistas: ['Stevie Wonder', 'Aretha Franklin', 'James Brown', 'Tower of Power'],
     portadaUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=600&auto=format&fit=crop',
-    freqsAudio: [146, 220, 293, 370]
+    freqsAudio: [146, 220, 293, 370],
+    youtubeUrl: 'https://www.youtube.com/playlist?list=PL4fGSI1pDJn6jWjX6uT7L2y4_c3_v6xK4'
   },
   {
     id: 'set-3',
