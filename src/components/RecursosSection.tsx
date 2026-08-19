@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Download, FileText, BookOpen, CheckCircle, Sparkles } from 'lucide-react';
+import { Download, FileText, BookOpen, CheckCircle, Sparkles, Youtube, MessageCircle } from 'lucide-react';
 
 export const RecursosSection: React.FC = () => {
   const { recursos } = useAppContext();
@@ -67,41 +67,68 @@ export const RecursosSection: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-[#21262d] flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <span>{rec.tipo === 'pdf' ? `PDF (${rec.tamanioPdf || '1.0 MB'})` : 'Guía de Práctica'}</span>
-                  </div>
+                <div className="mt-6 pt-4 border-t border-[#21262d] space-y-3">
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <span>{rec.tipo === 'pdf' ? `PDF (${rec.tamanioPdf || '1.0 MB'})` : 'Guía de Práctica'}</span>
+                    </div>
 
-                  {rec.tipo === 'pdf' ? (
-                    <button
-                      onClick={() => handleDownloadPdf(rec.id, rec.titulo)}
-                      className={`text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
-                        isDownloaded
-                          ? 'bg-emerald-500 text-black shadow-md'
-                          : 'bg-[#f59e0b] hover:bg-amber-400 text-black shadow-md shadow-[#f59e0b]/10'
-                      }`}
-                    >
-                      {isDownloaded ? (
-                        <>
-                          <CheckCircle className="w-4 h-4" />
-                          <span>¡Descargado!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4" />
-                          <span>Descargar PDF</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
                     <a
                       href="#agendar"
-                      className="text-xs font-semibold text-gray-300 hover:text-white bg-[#0d1117] px-4 py-2 rounded-xl border border-[#21262d] hover:border-gray-600 transition-colors"
+                      className="text-xs font-semibold text-gray-300 hover:text-white bg-[#0d1117] px-3 py-1.5 rounded-xl border border-[#21262d] hover:border-gray-600 transition-colors flex items-center gap-1.5"
                     >
-                      Consultar en Clase
+                      <MessageCircle className="w-3.5 h-3.5 text-[#f59e0b]" />
+                      <span>Consultar en Clase</span>
                     </a>
-                  )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {rec.documentoUrl ? (
+                      <a
+                        href={rec.documentoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold px-4 py-2 rounded-xl bg-[#f59e0b] hover:bg-amber-400 text-black shadow-md flex items-center gap-2 transition-all"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Ver / Descargar PDF</span>
+                      </a>
+                    ) : rec.tipo === 'pdf' && (
+                      <button
+                        onClick={() => handleDownloadPdf(rec.id, rec.titulo)}
+                        className={`text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                          isDownloaded
+                            ? 'bg-emerald-500 text-black shadow-md'
+                            : 'bg-[#f59e0b] hover:bg-amber-400 text-black shadow-md shadow-[#f59e0b]/10'
+                        }`}
+                      >
+                        {isDownloaded ? (
+                          <>
+                            <CheckCircle className="w-4 h-4" />
+                            <span>¡Descargado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4" />
+                            <span>Descargar PDF</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {rec.youtubeUrl && (
+                      <a
+                        href={rec.youtubeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold px-4 py-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 flex items-center gap-2 transition-all"
+                      >
+                        <Youtube className="w-4 h-4 text-red-500" />
+                        <span>Ver Lección en YouTube</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             );

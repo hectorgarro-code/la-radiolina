@@ -21,6 +21,8 @@ export interface RecursoItem {
   tipo: 'pdf' | 'video' | 'guia';
   tamanioPdf?: string;
   linkUrl?: string;
+  documentoUrl?: string;
+  youtubeUrl?: string;
 }
 
 export interface RadioSetItem {
@@ -102,7 +104,8 @@ export const MOCK_RECURSOS: RecursoItem[] = [
     descripcion: 'Los 5 patrones fundamentales explicados con diagramas de diapasón, digitación y ejemplos para improvisar sobre blues y rock.',
     nivel: 'Todos los niveles',
     tipo: 'pdf',
-    tamanioPdf: '1.4 MB'
+    tamanioPdf: '1.4 MB',
+    youtubeUrl: 'https://www.youtube.com/watch?v=5aK7XnOnd3E'
   },
   {
     id: 'rec-2',
@@ -110,7 +113,8 @@ export const MOCK_RECURSOS: RecursoItem[] = [
     categoria: 'Tip de Práctica',
     descripcion: '3 ejercicios diarios de 5 minutos para calentar agilidad sin tensionar la muñeca ni el cuello.',
     nivel: 'Principiante',
-    tipo: 'guia'
+    tipo: 'guia',
+    youtubeUrl: 'https://www.youtube.com/watch?v=5aK7XnOnd3E'
   },
   {
     id: 'rec-3',

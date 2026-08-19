@@ -67,7 +67,9 @@ export const AdminPanel: React.FC = () => {
     descripcion: '',
     nivel: 'Todos los niveles' as const,
     tipo: 'pdf' as const,
-    tamanioPdf: '1.2 MB'
+    tamanioPdf: '1.2 MB',
+    documentoUrl: '',
+    youtubeUrl: ''
   });
 
   const [newRadioSet, setNewRadioSet] = useState({
@@ -144,7 +146,9 @@ export const AdminPanel: React.FC = () => {
       descripcion: '',
       nivel: 'Todos los niveles',
       tipo: 'pdf',
-      tamanioPdf: '1.2 MB'
+      tamanioPdf: '1.2 MB',
+      documentoUrl: '',
+      youtubeUrl: ''
     });
     showNotify('¡Recurso pedagógico agregado!');
   };
@@ -572,6 +576,23 @@ export const AdminPanel: React.FC = () => {
                   className="w-full bg-[#161b22] border border-[#21262d] rounded-xl p-3 text-white text-xs"
                 />
 
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <input
+                    type="url"
+                    placeholder="Enlace al Documento / PDF (opcional, ej: https://...)"
+                    value={newRecurso.documentoUrl}
+                    onChange={(e) => setNewRecurso({ ...newRecurso, documentoUrl: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-400"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Enlace de YouTube de la lección (opcional, ej: https://www.youtube.com/watch?v=...)"
+                    value={newRecurso.youtubeUrl}
+                    onChange={(e) => setNewRecurso({ ...newRecurso, youtubeUrl: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                  />
+                </div>
+
                 <button type="submit" className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2">
                   <Plus className="w-4 h-4" /> Guardar Recurso PDF
                 </button>
@@ -632,11 +653,43 @@ export const AdminPanel: React.FC = () => {
                           className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
                         />
                       </div>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Enlace Documento / PDF</label>
+                          <input
+                            type="text"
+                            value={editingRecursoData.documentoUrl || ''}
+                            onChange={(e) => setEditingRecursoData({ ...editingRecursoData, documentoUrl: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-cyan-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Enlace YouTube Lección</label>
+                          <input
+                            type="text"
+                            value={editingRecursoData.youtubeUrl || ''}
+                            onChange={(e) => setEditingRecursoData({ ...editingRecursoData, youtubeUrl: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-red-500"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div key={r.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
                       <div>
-                        <span className="text-xs font-bold text-cyan-400">{r.categoria}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-cyan-400">{r.categoria}</span>
+                          {r.documentoUrl && (
+                            <span className="text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-mono">
+                              PDF Link
+                            </span>
+                          )}
+                          {r.youtubeUrl && (
+                            <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
+                              YouTube
+                            </span>
+                          )}
+                        </div>
                         <h5 className="font-bold text-white text-sm">{r.titulo}</h5>
                         <p className="text-[11px] text-gray-500 font-light truncate max-w-md">{r.descripcion}</p>
                       </div>
