@@ -52,6 +52,7 @@ export const AdminPanel: React.FC = () => {
     duracion: '2:00',
     fecha: 'Agosto 2026',
     imagenUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600&auto=format&fit=crop',
+    youtubeUrl: '',
     tags: ['Estudio', 'Práctica']
   });
 
@@ -99,6 +100,7 @@ export const AdminPanel: React.FC = () => {
       duracion: '2:00',
       fecha: 'Agosto 2026',
       imagenUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600&auto=format&fit=crop',
+      youtubeUrl: '',
       tags: ['Estudio']
     });
     showNotify('¡Grabación de alumno agregada!');
@@ -359,6 +361,16 @@ export const AdminPanel: React.FC = () => {
                   />
                 </div>
 
+                <div>
+                  <input
+                    type="url"
+                    placeholder="Enlace de YouTube (opcional, ej: https://www.youtube.com/watch?v=...)"
+                    value={newAlumno.youtubeUrl}
+                    onChange={(e) => setNewAlumno({ ...newAlumno, youtubeUrl: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                  />
+                </div>
+
                 <button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2">
                   <Plus className="w-4 h-4" /> Cargar Grabación
                 </button>
@@ -373,6 +385,11 @@ export const AdminPanel: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-white text-sm">{a.nombre}</span>
                         <span className="text-xs text-[#f59e0b]">({a.instrumento})</span>
+                        {a.youtubeUrl && (
+                          <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
+                            YouTube
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-gray-400 font-medium">{a.titulo}</p>
                     </div>

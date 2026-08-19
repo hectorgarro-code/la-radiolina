@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Play, Pause, Award, Sparkles, Filter } from 'lucide-react';
+import { Play, Pause, Award, Sparkles, Filter, Youtube } from 'lucide-react';
 
 export const AlumnosSection: React.FC = () => {
   const { alumnos } = useAppContext();
@@ -149,6 +149,20 @@ export const AlumnosSection: React.FC = () => {
                     <p className="text-xs text-gray-400 leading-relaxed font-light">
                       {alumno.descripcion}
                     </p>
+
+                    {alumno.youtubeUrl && (
+                      <div className="pt-1">
+                        <a
+                          href={alumno.youtubeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 font-semibold bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <Youtube className="w-4 h-4 text-red-500" />
+                          <span>Ver en YouTube</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
 

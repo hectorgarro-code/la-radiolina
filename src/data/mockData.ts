@@ -7,6 +7,7 @@ export interface AlumnoItem {
   duracion: string;
   fecha: string;
   audioUrl?: string;
+  youtubeUrl?: string;
   imagenUrl: string;
   tags: string[];
 }
@@ -54,6 +55,7 @@ export const MOCK_ALUMNOS: AlumnoItem[] = [
     duracion: '2:15',
     fecha: 'Agosto 2026',
     imagenUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600&auto=format&fit=crop',
+    youtubeUrl: 'https://www.youtube.com',
     tags: ['Solo', 'Rock Clásico', 'Electrica']
   },
   {
