@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Users, QrCode, Download, Calendar, Video, Radio, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Users, QrCode, Download, Calendar, Video, Radio, CheckCircle2, ShieldCheck, Printer } from 'lucide-react';
 
 const DiscordIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg className={className || "w-4 h-4"} viewBox="0 0 24 24" fill="currentColor">
@@ -18,44 +18,129 @@ export const ClubMelomanosSection: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const numSocio = 'RAD-2026-084';
 
+  const getSvgString = () => {
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+        <defs>
+          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#161b22"/>
+            <stop offset="50%" stop-color="#0d1117"/>
+            <stop offset="100%" stop-color="#161b22"/>
+          </linearGradient>
+          <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#ff6b4a"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Outer Card Background & Golden Border -->
+        <rect width="640" height="360" rx="24" fill="url(#bgGrad)" stroke="#f59e0b" stroke-width="4"/>
+
+        <!-- Header Separator Line -->
+        <line x1="30" y1="95" x2="610" y2="95" stroke="#21262d" stroke-width="1.5"/>
+
+        <!-- Top Left Logo Icon -->
+        <circle cx="65" cy="52" r="20" fill="url(#btnGrad)"/>
+        <g transform="translate(54, 41) scale(0.9)">
+          <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="#000000" stroke-width="2"/>
+          <circle cx="8" cy="13" r="3" fill="#000000"/>
+          <line x1="15" y1="11" x2="19" y2="11" stroke="#000000" stroke-width="2"/>
+          <line x1="15" y1="15" x2="19" y2="15" stroke="#000000" stroke-width="2"/>
+          <line x1="7" y1="6" x2="14" y2="1" stroke="#000000" stroke-width="2"/>
+        </g>
+
+        <!-- Title & Subtitle -->
+        <text x="96" y="48" font-size="20" font-weight="900" font-family="system-ui, -apple-system, sans-serif" fill="#ffffff" letter-spacing="1">LA RADIOLINA</text>
+        <text x="96" y="66" font-size="10" font-weight="700" font-family="system-ui, -apple-system, sans-serif" fill="#8b949e" letter-spacing="0.5">CLUB DE LOS MELÓMANOS • COSTA DEL ESTE</text>
+
+        <!-- Top Right Badge -->
+        <rect x="460" y="36" width="145" height="32" rx="16" fill="#f59e0b" fill-opacity="0.15" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="532" y="57" font-size="13" font-weight="bold" font-family="monospace" fill="#f59e0b" text-anchor="middle">${numSocio}</text>
+
+        <!-- Left Column Info -->
+        <text x="45" y="132" font-size="10" font-weight="700" font-family="system-ui, -apple-system, sans-serif" fill="#6b7280" letter-spacing="1.5">SOCIO ACTIVO</text>
+        <text x="45" y="165" font-size="24" font-weight="800" font-family="system-ui, -apple-system, sans-serif" fill="#ffffff">${nombre || 'Tu Nombre'}</text>
+
+        <text x="45" y="210" font-size="10" font-weight="700" font-family="system-ui, -apple-system, sans-serif" fill="#6b7280" letter-spacing="1.5">ESTILO PREFERIDO</text>
+        <text x="45" y="234" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" fill="#f59e0b">${generoFav || 'Estilo'}</text>
+
+        <text x="45" y="280" font-size="10" font-weight="700" font-family="system-ui, -apple-system, sans-serif" fill="#6b7280" letter-spacing="1.5">CATEGORÍA</text>
+        <text x="45" y="304" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" fill="#d1d5db">${rolClub}</text>
+
+        <!-- Right Column QR Card Box -->
+        <rect x="440" y="130" width="165" height="180" rx="16" fill="#0d1117" stroke="#21262d" stroke-width="1.5"/>
+
+        <!-- QR Matrix Icon inside Box -->
+        <g transform="translate(487, 160) scale(2.4)">
+          <path d="M0 0h6v6H0zM2 2h2v2H2zM12 0h6v6h-6zM14 2h2v2h-2zM0 12h6v6H0zM2 14h2v2H2zM8 0h2v4H8zM8 8h2v2H8zM0 8h4v2H0zM12 8h4v2h-4zM16 12h2v6h-2zM12 16h2v2h-2zM8 14h4v2H8zM8 18h2v2H8zM14 14h2v2h-2z" fill="#ffffff"/>
+        </g>
+
+        <!-- MEMBER VERIFIED Text -->
+        <text x="522" y="285" font-size="10" font-weight="bold" font-family="monospace" fill="#6b7280" text-anchor="middle" letter-spacing="0.5">MEMBER VERIFIED</text>
+      </svg>
+    `;
+  };
+
   const handleDownloadCard = () => {
     setIsDownloaded(true);
     setTimeout(() => setIsDownloaded(false), 3000);
 
-    const svgData = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="600" height="350" viewBox="0 0 600 350">
-        <rect width="600" height="350" rx="24" fill="#161b22" stroke="#f59e0b" stroke-width="4"/>
-        <rect x="20" y="20" width="560" height="310" rx="16" fill="#0d1117" stroke="#21262d"/>
-        <circle cx="70" cy="70" r="30" fill="#f59e0b"/>
-        <text x="70" y="78" font-size="28" font-family="sans-serif" text-anchor="middle" fill="#000">📻</text>
-        <text x="120" y="65" font-size="24" font-weight="bold" font-family="sans-serif" fill="#ffffff">LA RADIOLINA</text>
-        <text x="120" y="85" font-size="14" font-family="sans-serif" fill="#f59e0b">CLUB DE LOS MELÓMANOS • COSTA DEL ESTE</text>
-        
-        <text x="40" y="140" font-size="12" font-family="sans-serif" fill="#8b949e">MIEMBRO OFICIAL</text>
-        <text x="40" y="175" font-size="26" font-weight="bold" font-family="sans-serif" fill="#ffffff">${nombre}</text>
-        
-        <text x="40" y="215" font-size="12" font-family="sans-serif" fill="#8b949e">GÉNERO / ESTILO PREFERIDO</text>
-        <text x="40" y="235" font-size="16" font-family="sans-serif" fill="#f59e0b">${generoFav}</text>
-        
-        <text x="40" y="280" font-size="12" font-family="sans-serif" fill="#8b949e">ROL</text>
-        <text x="40" y="300" font-size="14" font-family="sans-serif" fill="#ffffff">${rolClub}</text>
-        
-        <text x="450" y="140" font-size="12" font-family="sans-serif" fill="#8b949e">SOCIO Nº</text>
-        <text x="450" y="165" font-size="16" font-weight="bold" font-family="monospace" fill="#f59e0b">${numSocio}</text>
-        
-        <rect x="450" y="190" width="110" height="110" fill="#ffffff" rx="8"/>
-        <text x="505" y="250" font-size="32" text-anchor="middle" fill="#000">🏁</text>
-      </svg>
-    `;
-
+    const svgData = getSvgString();
     const blob = new Blob([svgData], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Carnet_Melomano_${nombre.replace(/\s+/g, '_')}.svg`;
+    a.download = `Carnet_Melomano_${(nombre || 'Socio').replace(/\s+/g, '_')}.svg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handlePrintCard = () => {
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Carnet Melómano - ${nombre}</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 40px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              background-color: #0d1117;
+              color: #ffffff;
+              font-family: system-ui, -apple-system, sans-serif;
+            }
+            .card-wrapper {
+              width: 640px;
+              height: 360px;
+              box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+              border-radius: 24px;
+            }
+            @media print {
+              body { background: transparent; padding: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="margin-bottom: 20px;">
+            <button onclick="window.print()" style="background:#f59e0b; color:#000; border:none; padding:12px 28px; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer;">
+              🖨️ Imprimir Carnet
+            </button>
+          </div>
+          <div class="card-wrapper">
+            ${getSvgString()}
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -179,27 +264,37 @@ export const ClubMelomanosSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Download Button */}
-            <button
-              onClick={handleDownloadCard}
-              className={`w-full font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
-                isDownloaded
-                  ? 'bg-emerald-500 text-black'
-                  : 'bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black hover:opacity-95'
-              }`}
-            >
-              {isDownloaded ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>¡Carnet Generado y Descargado!</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  <span>Descargar mi Carnet de Melómano (SVG)</span>
-                </>
-              )}
-            </button>
+            {/* Download & Print Buttons */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <button
+                onClick={handleDownloadCard}
+                className={`font-bold py-3.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg ${
+                  isDownloaded
+                    ? 'bg-emerald-500 text-black'
+                    : 'bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black hover:opacity-95'
+                }`}
+              >
+                {isDownloaded ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>¡Carnet Descargado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>Descargar Carnet (SVG)</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handlePrintCard}
+                className="bg-[#161b22] hover:bg-gray-800 border border-[#f59e0b]/50 text-white font-bold py-3.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
+              >
+                <Printer className="w-4 h-4 text-[#f59e0b]" />
+                <span>Imprimir Carnet</span>
+              </button>
+            </div>
           </div>
 
           {/* Google Meet Event Column */}
