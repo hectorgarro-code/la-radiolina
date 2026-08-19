@@ -27,7 +27,8 @@ import {
   Music,
   Mic,
   Headphones,
-  Flame
+  Flame,
+  Mail
 } from 'lucide-react';
 
 export const renderInstrumentIcon = (iconName: string, className?: string, style?: React.CSSProperties) => {
@@ -84,7 +85,7 @@ const DEFAULT_STATION_COLORS = [
 ];
 
 function MainContent() {
-  const { siteTexts, dialChannels, estudioInstrumentos, setIsAdminOpen, isAdminLoggedIn } = useAppContext();
+  const { siteTexts, dialChannels, estudioInstrumentos, planPacks, setIsAdminOpen, isAdminLoggedIn } = useAppContext();
 
   // Mobile Menu State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -111,6 +112,8 @@ function MainContent() {
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
 
   // Booking Form State
+  const [userName, setUserName] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
   const [formInstrument, setFormInstrument] = useState<string>('Guitarra');
   const [formLevel, setFormLevel] = useState<string>('Desde cero');
   const [formMode, setFormMode] = useState<string>('Ciclo Anual (Residente)');
@@ -247,11 +250,13 @@ function MainContent() {
     }
   };
 
-  const sendWhatsApp = (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendWhatsApp = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const phone = siteTexts.whatsappPhone || "5491112345678";
 
     let text = `Hola! Vengo desde la página web de *La Radiolina* 📻🎶\n\n`;
+    if (userName.trim()) text += `👤 *Nombre:* ${userName}\n`;
+    if (userEmail.trim()) text += `✉️ *Email:* ${userEmail}\n`;
     text += `Quisiera consultar por las clases:\n`;
     text += `🎸 *Instrumento:* ${formInstrument}\n`;
     text += `🎯 *Nivel:* ${formLevel}\n`;
@@ -260,6 +265,23 @@ function MainContent() {
     text += `\n¿Me podrías brindar información de horarios y disponibilidad? ¡Gracias!`;
 
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const sendEmail = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const destEmail = siteTexts.contactEmail || 'contacto@laradiolina.com';
+    const subject = `Consulta Clases La Radiolina - ${formInstrument}`;
+    
+    let body = `Hola La Radiolina!\n\n`;
+    body += `Mi Nombre: ${userName || 'No especificado'}\n`;
+    body += `Mi Email de contacto: ${userEmail || 'No especificado'}\n`;
+    body += `Instrumento de interés: ${formInstrument}\n`;
+    body += `Nivel actual: ${formLevel}\n`;
+    body += `Modalidad deseada: ${formMode}\n\n`;
+    if (formMsg.trim()) body += `Mensaje / Consulta: ${formMsg}\n\n`;
+    body += `Enviado desde el sitio web de La Radiolina (laradiolina.com)`;
+
+    window.location.href = `mailto:${destEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -670,62 +692,49 @@ function MainContent() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-[#161b22] border border-[#21262d] rounded-3xl p-6 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-2">Residentes Costa del Este</span>
-                <h3 className="text-2xl font-bold text-white">Ciclo Regular Anual</h3>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-                  Para quienes viven en la zona y buscan una rutina semanal constante de aprendizaje y progreso paulatino.
-                </p>
-                <ul className="mt-6 space-y-3 text-xs text-gray-300">
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#f59e0b]" /> 1 clase semanal de 60 min</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#f59e0b]" /> Horarios fijos reservados</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#f59e0b]" /> Material y pistas grabadas</li>
-                </ul>
+            {planPacks.map((plan) => (
+              <div 
+                key={plan.id}
+                className={`${
+                  plan.destacado 
+                    ? 'bg-gradient-to-b from-[#161b22] to-amber-950/20 border-2 border-[#f59e0b] shadow-xl' 
+                    : 'bg-[#161b22] border border-[#21262d]'
+                } rounded-3xl p-6 flex flex-col justify-between relative`}
+              >
+                {plan.destacado && (
+                  <span className="absolute -top-3 right-6 bg-[#f59e0b] text-black font-extrabold text-[10px] uppercase px-3 py-1 rounded-full">
+                    Especial Vacaciones
+                  </span>
+                )}
+                <div>
+                  <span className={`text-xs font-bold uppercase tracking-wider block mb-2 ${plan.destacado ? 'text-[#f59e0b]' : 'text-cyan-400'}`}>
+                    {plan.badge}
+                  </span>
+                  <h3 className="text-2xl font-bold text-white">{plan.titulo}</h3>
+                  <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                    {plan.descripcion}
+                  </p>
+                  <ul className="mt-6 space-y-3 text-xs text-gray-300">
+                    {plan.caracteristicas.map((caract, cIdx) => (
+                      <li key={cIdx} className="flex items-center gap-2">
+                        {plan.destacado ? <Sun className="w-4 h-4 text-[#f59e0b]" /> : <Check className="w-4 h-4 text-[#f59e0b]" />}
+                        <span>{caract}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => { setFormMode(plan.titulo); scrollToSection('agendar'); }} 
+                  className={`mt-8 w-full text-center text-xs py-3 rounded-xl transition-all ${
+                    plan.destacado 
+                      ? 'bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-extrabold shadow-lg' 
+                      : 'bg-[#0d1117] hover:bg-gray-800 border border-[#21262d] text-white font-bold'
+                  }`}
+                >
+                  {plan.botonTexto}
+                </button>
               </div>
-              <button onClick={() => scrollToSection('agendar')} className="mt-8 w-full text-center bg-[#0d1117] hover:bg-gray-800 border border-[#21262d] text-white text-xs font-bold py-3 rounded-xl transition-colors">
-                {siteTexts.anualPriceInfo}
-              </button>
-            </div>
-
-            <div className="bg-gradient-to-b from-[#161b22] to-amber-950/20 border-2 border-[#f59e0b] rounded-3xl p-6 flex flex-col justify-between relative shadow-xl">
-              <span className="absolute -top-3 right-6 bg-[#f59e0b] text-black font-extrabold text-[10px] uppercase px-3 py-1 rounded-full">
-                Especial Vacaciones
-              </span>
-              <div>
-                <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider block mb-2">Turistas / Verano</span>
-                <h3 className="text-2xl font-bold text-white">Pack Intensivo de Verano</h3>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-                  ¿Aprovechás tus días en Costa del Este para tocar? Clases aceleradas de 1 a 3 semanas durante tu estadía.
-                </p>
-                <ul className="mt-6 space-y-3 text-xs text-gray-300">
-                  <li className="flex items-center gap-2"><Sun className="w-4 h-4 text-[#f59e0b]" /> 2 a 3 clases por semana</li>
-                  <li className="flex items-center gap-2"><Sun className="w-4 h-4 text-[#f59e0b]" /> Enfoque 100% práctico</li>
-                  <li className="flex items-center gap-2"><Sun className="w-4 h-4 text-[#f59e0b]" /> Flexibilidad de días</li>
-                </ul>
-              </div>
-              <button onClick={() => scrollToSection('agendar')} className="mt-8 w-full text-center bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-extrabold text-xs py-3 rounded-xl shadow-lg">
-                {siteTexts.veranoPriceInfo}
-              </button>
-            </div>
-
-            <div className="bg-[#161b22] border border-[#21262d] rounded-3xl p-6 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-bold text-[#ff6b4a] uppercase tracking-wider block mb-2">Flexibilidad Total</span>
-                <h3 className="text-2xl font-bold text-white">Clase Diagnóstico / Suelta</h3>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-                  Ideal si querés probar un instrumento por primera vez o destrabar una técnica específica sin compromiso de continuidad.
-                </p>
-                <ul className="mt-6 space-y-3 text-xs text-gray-300">
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#ff6b4a]" /> 1 sesión individual de 60 min</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#ff6b4a]" /> Proba varios instrumentos</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-[#ff6b4a]" /> Sin matrícula ni cuota</li>
-                </ul>
-              </div>
-              <button onClick={() => scrollToSection('agendar')} className="mt-8 w-full text-center bg-[#0d1117] hover:bg-gray-800 border border-[#21262d] text-white text-xs font-bold py-3 rounded-xl transition-colors">
-                Reservar Clase Suelta
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -743,7 +752,12 @@ function MainContent() {
                 Mirá las grabaciones del estudio, arreglos multi-instrumentales y contenido grabado en el espacio.
               </p>
             </div>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs transition-colors flex items-center gap-2 shrink-0">
+            <a 
+              href={siteTexts.youtubeChannelUrl || "https://youtube.com"} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs transition-colors flex items-center gap-2 shrink-0"
+            >
               <Youtube className="w-5 h-5" />
               <span>Visitar Canal de YouTube</span>
             </a>
@@ -758,10 +772,36 @@ function MainContent() {
           <div className="text-center mb-10">
             <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest block mb-2">Contacto Directo</span>
             <h2 className="text-3xl font-extrabold text-white">Consultar Disponibilidad y Precios</h2>
-            <p className="mt-2 text-gray-400 text-xs">Completá tus datos y te abre automáticamente el mensaje en WhatsApp.</p>
+            <p className="mt-2 text-gray-400 text-xs">Completá tus datos y elegí enviarlo directo por WhatsApp o por Email.</p>
           </div>
 
-          <form onSubmit={sendWhatsApp} className="bg-[#161b22] border border-[#21262d] rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl">
+          <form className="bg-[#161b22] border border-[#21262d] rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Tu Nombre Completo</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Sofía Garro"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 text-white text-sm focus:border-[#f59e0b] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Tu Email de Contacto</label>
+                <input
+                  type="email"
+                  placeholder="Ej: sofia@email.com"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 text-white text-sm focus:border-[#f59e0b] focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Instrumento elegido</label>
               <select 
@@ -769,12 +809,9 @@ function MainContent() {
                 onChange={(e) => setFormInstrument(e.target.value)} 
                 className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 text-white text-sm focus:border-[#f59e0b] focus:outline-none"
               >
-                <option value="Guitarra">Guitarra (Criolla / Acústica / Eléctrica)</option>
-                <option value="Piano / Teclado">Piano / Teclado</option>
-                <option value="Batería">Batería & Percusión</option>
-                <option value="Bajo Eléctrico">Bajo Eléctrico</option>
-                <option value="Ukelele">Ukelele</option>
-                <option value="Composición">Composición / Producción</option>
+                {estudioInstrumentos.map((inst) => (
+                  <option key={inst.id} value={inst.nombre}>{inst.nombre} ({inst.descripcion})</option>
+                ))}
                 <option value="Probar Varios">Quiero probar varios instrumentos</option>
               </select>
             </div>
@@ -801,9 +838,9 @@ function MainContent() {
                   onChange={(e) => setFormMode(e.target.value)} 
                   className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 text-white text-sm focus:border-[#f59e0b] focus:outline-none"
                 >
-                  <option value="Ciclo Anual (Residente)">Ciclo Anual (Residente)</option>
-                  <option value="Intensivo de Verano (Vacaciones)">Intensivo de Verano (Vacaciones)</option>
-                  <option value="Clase Suelta / Diagnóstico">Clase Suelta / Diagnóstico</option>
+                  {planPacks.map((p) => (
+                    <option key={p.id} value={p.titulo}>{p.titulo}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -819,10 +856,25 @@ function MainContent() {
               ></textarea>
             </div>
 
-            <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
-              <MessageCircle className="w-5 h-5" />
-              <span>Enviar Consulta a La Radiolina</span>
-            </button>
+            <div className="grid sm:grid-cols-2 gap-3 pt-2">
+              <button 
+                type="button" 
+                onClick={sendWhatsApp}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Enviar por WhatsApp</span>
+              </button>
+
+              <button 
+                type="button" 
+                onClick={sendEmail}
+                className="w-full bg-[#161b22] hover:bg-gray-800 border border-[#f59e0b]/50 text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <Mail className="w-4 h-4 text-[#f59e0b]" />
+                <span>Enviar por Email</span>
+              </button>
+            </div>
           </form>
 
         </div>

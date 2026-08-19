@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAppContext, EstudioInstrumento } from '../context/AppContext';
+import { useAppContext, EstudioInstrumento, PlanPack } from '../context/AppContext';
 import { renderInstrumentIcon } from '../App';
 import { 
   X, 
@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   FileText,
   Pencil,
-  Guitar
+  Guitar,
+  Layers
 } from 'lucide-react';
 import { AlumnoItem, RecursoItem, RadioSetItem } from '../data/mockData';
 
@@ -32,6 +33,10 @@ export const AdminPanel: React.FC = () => {
     addEstudioInstrumento,
     updateEstudioInstrumento,
     deleteEstudioInstrumento,
+    planPacks,
+    addPlanPack,
+    updatePlanPack,
+    deletePlanPack,
     alumnos,
     addAlumno,
     updateAlumno,
@@ -51,10 +56,21 @@ export const AdminPanel: React.FC = () => {
     resetToDefaults
   } = useAppContext();
 
-  const [activeTab, setActiveTab] = useState<'textos' | 'alumnos' | 'recursos' | 'dial' | 'sets' | 'club'>('textos');
+  const [activeTab, setActiveTab] = useState<'textos' | 'alumnos' | 'recursos' | 'dial' | 'sets' | 'club' | 'planes'>('textos');
   const [saveNotification, setSaveNotification] = useState<string | null>(null);
 
   // New Item States
+  const [newPlanPack, setNewPlanPack] = useState({
+    badge: 'RESIDENTES COSTA DEL ESTE',
+    titulo: '',
+    descripcion: '',
+    caracteristicasInput: '1 clase semanal de 60 min, Horarios fijos, Material grabado',
+    botonTexto: 'Consultar Arancel',
+    destacado: false
+  });
+
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [editingPlanData, setEditingPlanData] = useState<Partial<PlanPack> & { caracteristicasInput?: string }>({});
   const [newAlumno, setNewAlumno] = useState({
     nombre: '',
     instrumento: 'Guitarra Eléctrica',
@@ -216,6 +232,31 @@ export const AdminPanel: React.FC = () => {
     showNotify('¡Instrumento / Lección agregada al estudio!');
   };
 
+  const handleAddPlanPack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPlanPack.titulo) return;
+    const caracteristicas = newPlanPack.caracteristicasInput
+      ? newPlanPack.caracteristicasInput.split(',').map(c => c.trim()).filter(Boolean)
+      : ['Clases personalizadas'];
+    addPlanPack({
+      badge: newPlanPack.badge,
+      titulo: newPlanPack.titulo,
+      descripcion: newPlanPack.descripcion,
+      caracteristicas,
+      botonTexto: newPlanPack.botonTexto,
+      destacado: newPlanPack.destacado
+    });
+    setNewPlanPack({
+      badge: 'RESIDENTES COSTA DEL ESTE',
+      titulo: '',
+      descripcion: '',
+      caracteristicasInput: '1 clase semanal de 60 min, Horarios fijos, Material grabado',
+      botonTexto: 'Consultar Arancel',
+      destacado: false
+    });
+    showNotify('¡Pack / Plan de clases agregado!');
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
       <div className="bg-[#161b22] border-2 border-[#f59e0b] rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
@@ -306,6 +347,14 @@ export const AdminPanel: React.FC = () => {
           >
             <Users className="w-3.5 h-3.5 text-[#ff6b4a]" /> Club Melómanos
           </button>
+          <button
+            onClick={() => setActiveTab('planes')}
+            className={`px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'planes' ? 'bg-[#161b22] text-[#f59e0b] border-t-2 border-[#f59e0b]' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 text-indigo-400" /> Packs & Planes ({planPacks.length})
+          </button>
         </div>
 
         {/* Tab Contents */}
@@ -346,12 +395,36 @@ export const AdminPanel: React.FC = () => {
                 />
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                  <input
+                    type="text"
+                    value={siteTexts.whatsappPhone}
+                    onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
+                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Email de Destino para Consultas</label>
+                  <input
+                    type="email"
+                    placeholder="ej: contacto@laradiolina.com"
+                    value={siteTexts.contactEmail || ''}
+                    onChange={(e) => updateSiteTexts({ contactEmail: e.target.value })}
+                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                <label className="block text-xs font-bold text-gray-300 mb-1">Enlace al Canal Oficial de YouTube</label>
                 <input
-                  type="text"
-                  value={siteTexts.whatsappPhone}
-                  onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
+                  type="url"
+                  placeholder="ej: https://www.youtube.com/@laradiolina"
+                  value={siteTexts.youtubeChannelUrl || ''}
+                  onChange={(e) => updateSiteTexts({ youtubeChannelUrl: e.target.value })}
                   className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                 />
               </div>
@@ -1322,6 +1395,249 @@ export const AdminPanel: React.FC = () => {
               >
                 <Save className="w-4 h-4" /> Guardar Evento del Club
               </button>
+            </div>
+          )}
+
+          {/* TAB 7: Packs & Planes de Clases */}
+          {activeTab === 'planes' && (
+            <div className="space-y-6">
+              {/* Form Add Plan */}
+              <form onSubmit={handleAddPlanPack} className="bg-[#0d1117] p-5 rounded-2xl border border-[#21262d] space-y-4">
+                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Plus className="w-4 h-4" /> Agregar Nuevo Pack / Plan de Clases
+                </h4>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Insignia / Subtítulo (ej: RESIDENTES COSTA DEL ESTE)</label>
+                    <input
+                      type="text"
+                      placeholder="Ej: RESIDENTES / INTENSIVO"
+                      value={newPlanPack.badge}
+                      onChange={(e) => setNewPlanPack({ ...newPlanPack, badge: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Título del Pack (ej: Ciclo Regular Anual)</label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Pack Pro / Intensivo"
+                      value={newPlanPack.titulo}
+                      onChange={(e) => setNewPlanPack({ ...newPlanPack, titulo: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Descripción del Pack</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Descripción detallada para los estudiantes..."
+                    value={newPlanPack.descripcion}
+                    onChange={(e) => setNewPlanPack({ ...newPlanPack, descripcion: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl p-3 text-white text-xs"
+                  />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Características (separadas por comas)</label>
+                    <input
+                      type="text"
+                      placeholder="1 clase semanal, Horario reservado, Material"
+                      value={newPlanPack.caracteristicasInput}
+                      onChange={(e) => setNewPlanPack({ ...newPlanPack, caracteristicasInput: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Texto del Botón de Acción</label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Consultar Arancel Mensual"
+                      value={newPlanPack.botonTexto}
+                      onChange={(e) => setNewPlanPack({ ...newPlanPack, botonTexto: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="destacadoCheck"
+                    checked={newPlanPack.destacado}
+                    onChange={(e) => setNewPlanPack({ ...newPlanPack, destacado: e.target.checked })}
+                    className="w-4 h-4 rounded accent-[#f59e0b]"
+                  />
+                  <label htmlFor="destacadoCheck" className="text-xs font-bold text-amber-400 cursor-pointer">
+                    Destacar este Pack (Especial Vacaciones / Borde Dorado)
+                  </label>
+                </div>
+
+                <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Guardar Nuevo Pack
+                </button>
+              </form>
+
+              {/* Lista de Packs Actuales */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase">Packs & Modalidades Publicadas ({planPacks.length})</h4>
+                
+                <div className="space-y-3">
+                  {planPacks.map((plan) => (
+                    editingPlanId === plan.id ? (
+                      <div key={plan.id} className="bg-[#0d1117] p-5 rounded-2xl border border-indigo-500/50 space-y-4">
+                        <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                          <span className="text-xs font-bold text-indigo-400">Editando: {plan.titulo}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const caracteristicas = editingPlanData.caracteristicasInput
+                                  ? editingPlanData.caracteristicasInput.split(',').map(c => c.trim()).filter(Boolean)
+                                  : plan.caracteristicas;
+                                updatePlanPack(plan.id, {
+                                  ...editingPlanData,
+                                  caracteristicas
+                                });
+                                setEditingPlanId(null);
+                                showNotify('¡Pack actualizado!');
+                              }}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                            >
+                              <Save className="w-3.5 h-3.5" /> Guardar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingPlanId(null)}
+                              className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                            >
+                              <X className="w-3.5 h-3.5" /> Cancelar
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Insignia / Subtítulo</label>
+                            <input
+                              type="text"
+                              value={editingPlanData.badge || ''}
+                              onChange={(e) => setEditingPlanData({ ...editingPlanData, badge: e.target.value })}
+                              className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Título</label>
+                            <input
+                              type="text"
+                              value={editingPlanData.titulo || ''}
+                              onChange={(e) => setEditingPlanData({ ...editingPlanData, titulo: e.target.value })}
+                              className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                          <textarea
+                            rows={2}
+                            value={editingPlanData.descripcion || ''}
+                            onChange={(e) => setEditingPlanData({ ...editingPlanData, descripcion: e.target.value })}
+                            className="w-full bg-[#161b22] border border-[#21262d] rounded-lg p-2.5 text-white text-xs"
+                          />
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Características (separadas por comas)</label>
+                            <input
+                              type="text"
+                              value={editingPlanData.caracteristicasInput || ''}
+                              onChange={(e) => setEditingPlanData({ ...editingPlanData, caracteristicasInput: e.target.value })}
+                              className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400 block mb-1">Texto del Botón</label>
+                            <input
+                              type="text"
+                              value={editingPlanData.botonTexto || ''}
+                              onChange={(e) => setEditingPlanData({ ...editingPlanData, botonTexto: e.target.value })}
+                              className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`editDestacado_${plan.id}`}
+                            checked={editingPlanData.destacado ?? plan.destacado ?? false}
+                            onChange={(e) => setEditingPlanData({ ...editingPlanData, destacado: e.target.checked })}
+                            className="w-4 h-4 rounded accent-[#f59e0b]"
+                          />
+                          <label htmlFor={`editDestacado_${plan.id}`} className="text-xs text-amber-400 font-bold cursor-pointer">
+                            Destacado (Especial Vacaciones)
+                          </label>
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={plan.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">{plan.badge}</span>
+                            {plan.destacado && (
+                              <span className="text-[9px] bg-[#f59e0b] text-black font-extrabold px-2 py-0.5 rounded-full">
+                                DESTACADO
+                              </span>
+                            )}
+                          </div>
+                          <h5 className="font-bold text-white text-sm">{plan.titulo}</h5>
+                          <p className="text-xs text-gray-400 leading-relaxed font-light">{plan.descripcion}</p>
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {plan.caracteristicas.map((c, i) => (
+                              <span key={i} className="text-[10px] bg-[#161b22] text-gray-300 px-2 py-0.5 rounded border border-[#21262d]">
+                                ✓ {c}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPlanId(plan.id);
+                              setEditingPlanData({
+                                ...plan,
+                                caracteristicasInput: plan.caracteristicas.join(', ')
+                              });
+                            }}
+                            className="text-gray-400 hover:text-amber-400 p-2 transition-colors"
+                            title="Editar Pack"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deletePlanPack(plan.id)}
+                            className="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                            title="Eliminar Pack"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

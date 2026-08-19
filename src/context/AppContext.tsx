@@ -28,6 +28,18 @@ export interface SiteTexts {
   anualPriceInfo: string;
   veranoPriceInfo: string;
   discordUrl: string;
+  youtubeChannelUrl: string;
+  contactEmail: string;
+}
+
+export interface PlanPack {
+  id: string;
+  badge: string;
+  titulo: string;
+  descripcion: string;
+  caracteristicas: string[];
+  botonTexto: string;
+  destacado?: boolean;
 }
 
 const DEFAULT_SITE_TEXTS: SiteTexts = {
@@ -37,8 +49,40 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   whatsappPhone: '5491112345678',
   anualPriceInfo: 'Consultar Arancel Mensual',
   veranoPriceInfo: 'Consultar Disponibilidad Verano',
-  discordUrl: 'https://discord.gg/radiolina'
+  discordUrl: 'https://discord.gg/radiolina',
+  youtubeChannelUrl: 'https://www.youtube.com/@laradiolina',
+  contactEmail: 'contacto@laradiolina.com'
 };
+
+const DEFAULT_PLAN_PACKS: PlanPack[] = [
+  {
+    id: 'plan-1',
+    badge: 'RESIDENTES COSTA DEL ESTE',
+    titulo: 'Ciclo Regular Anual',
+    descripcion: 'Para quienes viven en la zona y buscan una rutina semanal constante de aprendizaje y progreso paulatinamente.',
+    caracteristicas: ['1 clase semanal de 60 min', 'Horarios fijos reservados', 'Material y pistas grabadas'],
+    botonTexto: 'Consultar Arancel Mensual',
+    destacado: false
+  },
+  {
+    id: 'plan-2',
+    badge: 'TURISTAS / VERANO',
+    titulo: 'Pack Intensivo de Verano',
+    descripcion: '¿Aprovechás tus días en Costa del Este para tocar? Clases aceleradas de 1 a 3 semanas durante tu estadía.',
+    caracteristicas: ['2 a 3 clases por semana', 'Enfoque 100% práctico', 'Flexibilidad de días'],
+    botonTexto: 'Consultar Disponibilidad Verano',
+    destacado: true
+  },
+  {
+    id: 'plan-3',
+    badge: 'FLEXIBILIDAD TOTAL',
+    titulo: 'Clase Diagnóstico / Suelta',
+    descripcion: 'Ideal si querés probar un instrumento por primera vez o destrabar una técnica específica sin compromiso.',
+    caracteristicas: ['1 sesión individual de 60 min', 'Probá varios instrumentos', 'Sin matrícula ni cuota'],
+    botonTexto: 'Reservar Clase Suelta',
+    destacado: false
+  }
+];
 
 const DEFAULT_DIAL_CHANNELS: DialChannel[] = [
   { freq: '88.5 FM', genre: 'Rock & Blues', instruments: 'Guitarra Eléctrica / Bajo / Batería', freqs: [330, 392, 493, 587], color: '#f59e0b', youtubeUrl: 'https://www.youtube.com/watch?v=5aK7XnOnd3E' },
@@ -78,6 +122,11 @@ interface AppContextType {
   addEstudioInstrumento: (item: Omit<EstudioInstrumento, 'id'>) => void;
   updateEstudioInstrumento: (id: string, item: Partial<EstudioInstrumento>) => void;
   deleteEstudioInstrumento: (id: string) => void;
+
+  planPacks: PlanPack[];
+  addPlanPack: (item: Omit<PlanPack, 'id'>) => void;
+  updatePlanPack: (id: string, item: Partial<PlanPack>) => void;
+  deletePlanPack: (id: string) => void;
 
   alumnos: AlumnoItem[];
   addAlumno: (item: Omit<AlumnoItem, 'id'>) => void;
@@ -120,6 +169,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : DEFAULT_ESTUDIO_INSTRUMENTOS;
   });
 
+  const [planPacks, setPlanPacks] = useState<PlanPack[]>(() => {
+    const saved = localStorage.getItem('radiolina_plans');
+    return saved ? JSON.parse(saved) : DEFAULT_PLAN_PACKS;
+  });
+
   const [alumnos, setAlumnos] = useState<AlumnoItem[]>(() => {
     const saved = localStorage.getItem('radiolina_alumnos');
     return saved ? JSON.parse(saved) : MOCK_ALUMNOS;
@@ -153,6 +207,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('radiolina_estudio_inst', JSON.stringify(estudioInstrumentos));
   }, [estudioInstrumentos]);
+
+  useEffect(() => {
+    localStorage.setItem('radiolina_plans', JSON.stringify(planPacks));
+  }, [planPacks]);
 
   useEffect(() => {
     localStorage.setItem('radiolina_alumnos', JSON.stringify(alumnos));
@@ -202,6 +260,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteEstudioInstrumento = (id: string) => {
     setEstudioInstrumentos(prev => prev.filter(inst => inst.id !== id));
+  };
+
+  const addPlanPack = (item: Omit<PlanPack, 'id'>) => {
+    const newItem: PlanPack = { ...item, id: Date.now().toString() };
+    setPlanPacks(prev => [...prev, newItem]);
+  };
+
+  const updatePlanPack = (id: string, item: Partial<PlanPack>) => {
+    setPlanPacks(prev => prev.map(p => p.id === id ? { ...p, ...item } : p));
+  };
+
+  const deletePlanPack = (id: string) => {
+    setPlanPacks(prev => prev.filter(p => p.id !== id));
   };
 
   const addAlumno = (item: Omit<AlumnoItem, 'id'>) => {
@@ -258,6 +329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const resetToDefaults = () => {
     setSiteTexts(DEFAULT_SITE_TEXTS);
     setEstudioInstrumentos(DEFAULT_ESTUDIO_INSTRUMENTOS);
+    setPlanPacks(DEFAULT_PLAN_PACKS);
     setAlumnos(MOCK_ALUMNOS);
     setRecursos(MOCK_RECURSOS);
     setDialChannels(DEFAULT_DIAL_CHANNELS);
@@ -279,6 +351,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addEstudioInstrumento,
       updateEstudioInstrumento,
       deleteEstudioInstrumento,
+      planPacks,
+      addPlanPack,
+      updatePlanPack,
+      deletePlanPack,
       alumnos,
       addAlumno,
       updateAlumno,
