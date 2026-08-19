@@ -46,7 +46,7 @@ export const AdminModal: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ingresá la contraseña (ej: radiolina2026)"
+                placeholder="Ingresá la contraseña"
                 className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 text-white text-sm focus:border-[#f59e0b] focus:outline-none pr-10"
                 autoFocus
               />
@@ -57,7 +57,7 @@ export const AdminModal: React.FC = () => {
           {errorMsg && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 shrink-0" />
-              <span>Clave incorrecta. Intentá con: radiolina2026</span>
+              <span>Clave de acceso incorrecta. Por favor, reintentá.</span>
             </div>
           )}
 
