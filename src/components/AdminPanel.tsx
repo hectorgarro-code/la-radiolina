@@ -292,26 +292,14 @@ export const AdminPanel: React.FC = () => {
                 />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
-                  <input
-                    type="text"
-                    value={siteTexts.whatsappPhone}
-                    onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Enlace / Invitación a Canal de Discord</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: https://discord.gg/radiolina"
-                    value={siteTexts.discordUrl || ''}
-                    onChange={(e) => updateSiteTexts({ discordUrl: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#5865F2]"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                <input
+                  type="text"
+                  value={siteTexts.whatsappPhone}
+                  onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
+                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                />
               </div>
 
               <button
