@@ -28,7 +28,9 @@ import {
   Mic,
   Headphones,
   Flame,
-  Mail
+  Mail,
+  MapPin,
+  Compass
 } from 'lucide-react';
 
 export const renderInstrumentIcon = (iconName: string, className?: string, style?: React.CSSProperties) => {
@@ -877,6 +879,57 @@ function MainContent() {
             </div>
           </form>
 
+        </div>
+      </section>
+
+      {/* Ubicación & Mapa Section */}
+      <section id="ubicacion" className="py-20 bg-[#161b22]/70 border-t border-[#21262d]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest block mb-2">Estudio Equipado</span>
+            <h2 className="text-3xl font-extrabold text-white">Ubicación de La Radiolina</h2>
+            <p className="mt-2 text-gray-400 text-xs flex items-center justify-center gap-1.5">
+              <MapPin className="w-4 h-4 text-[#f59e0b]" />
+              <span>{siteTexts.addressText || 'Costa del Este, Partido de La Costa, Buenos Aires'}</span>
+            </p>
+          </div>
+
+          <div className="relative max-w-5xl mx-auto bg-[#0d1117] border-2 border-[#21262d] rounded-3xl overflow-hidden shadow-2xl">
+            <div className="w-full h-96 relative">
+              <iframe
+                title="Ubicacion La Radiolina Google Maps"
+                src={siteTexts.googleMapsUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12975.312957907572!2d-56.619018449999996!3d-36.6083072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959c00b9dcd8e411%3A0xb3557eefdbf7d3a0!2sCosta%20del%20Este%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar"}
+                width="100%"
+                height="100%"
+                style={{ border: 0, filter: 'grayscale(0.2) contrast(1.1)' }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+
+            <div className="bg-[#0d1117] p-4 sm:p-6 border-t border-[#21262d] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-xs text-gray-300">
+                <div className="w-10 h-10 rounded-2xl bg-[#161b22] border border-[#21262d] flex items-center justify-center shrink-0">
+                  <Compass className="w-5 h-5 text-[#f59e0b]" />
+                </div>
+                <div>
+                  <h4 className="text-white font-bold">¿Cómo llegar al estudio?</h4>
+                  <p className="text-gray-400 text-[11px]">{siteTexts.addressText || 'Costa del Este, Partido de La Costa'}</p>
+                </div>
+              </div>
+
+              <a
+                href={`https://maps.google.com/?q=${encodeURIComponent(siteTexts.addressText || 'Costa del Este')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 shadow-lg hover:scale-105 transition-all shrink-0"
+              >
+                <MapPin className="w-4 h-4" />
+                <span>Abrir en Google Maps GPS</span>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

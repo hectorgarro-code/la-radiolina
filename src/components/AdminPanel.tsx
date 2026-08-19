@@ -429,6 +429,30 @@ export const AdminPanel: React.FC = () => {
                 />
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Dirección Física del Estudio (Texto)</label>
+                  <input
+                    type="text"
+                    placeholder="ej: Costa del Este, Partido de La Costa, Buenos Aires"
+                    value={siteTexts.addressText || ''}
+                    onChange={(e) => updateSiteTexts({ addressText: e.target.value })}
+                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">URL / Iframe de Google Maps</label>
+                  <input
+                    type="text"
+                    placeholder="ej: https://www.google.com/maps/embed?pb=..."
+                    value={siteTexts.googleMapsUrl || ''}
+                    onChange={(e) => updateSiteTexts({ googleMapsUrl: e.target.value })}
+                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                  />
+                </div>
+              </div>
+
               <button
                 type="submit"
                 className="bg-[#f59e0b] hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-xl text-xs flex items-center gap-2"
