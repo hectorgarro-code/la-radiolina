@@ -720,40 +720,84 @@ export const AdminPanel: React.FC = () => {
           {activeTab === 'dial' && (
             <div className="space-y-6">
               <h4 className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider">Estaciones del Dial Interactivo</h4>
-              {dialChannels.map((ch, idx) => (
-                <div key={idx} className="bg-[#0d1117] p-4 rounded-2xl border border-[#21262d] space-y-3">
-                  <span className="text-xs font-bold text-[#f59e0b] font-mono">Estación #{idx + 1}: {ch.freq}</span>
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[10px] text-gray-400 mb-1">Frecuencia FM</label>
-                      <input
-                        type="text"
-                        value={ch.freq}
-                        onChange={(e) => updateDialChannel(idx, { ...ch, freq: e.target.value })}
-                        className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
-                      />
+              {dialChannels.map((ch, idx) => {
+                const currentColor = ch.color || (idx === 0 ? '#f59e0b' : idx === 1 ? '#06b6d4' : idx === 2 ? '#ec4899' : '#a855f7');
+                return (
+                  <div key={idx} className="bg-[#0d1117] p-5 rounded-2xl border border-[#21262d] space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold font-mono flex items-center gap-2" style={{ color: currentColor }}>
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: currentColor }}></span>
+                        Estación #{idx + 1}: {ch.freq}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {['#f59e0b', '#06b6d4', '#ec4899', '#a855f7', '#10b981', '#ef4444', '#3b82f6'].map((hex) => (
+                          <button
+                            key={hex}
+                            type="button"
+                            onClick={() => updateDialChannel(idx, { ...ch, color: hex })}
+                            style={{ backgroundColor: hex }}
+                            className={`w-5 h-5 rounded-full transition-transform ${currentColor === hex ? 'scale-125 ring-2 ring-white' : 'opacity-70 hover:opacity-100'}`}
+                            title={`Color ${hex}`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] text-gray-400 mb-1">Género / Estilo</label>
-                      <input
-                        type="text"
-                        value={ch.genre}
-                        onChange={(e) => updateDialChannel(idx, { ...ch, genre: e.target.value })}
-                        className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
-                      />
+
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-1">Frecuencia FM</label>
+                        <input
+                          type="text"
+                          value={ch.freq}
+                          onChange={(e) => updateDialChannel(idx, { ...ch, freq: e.target.value })}
+                          className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-1">Género / Estilo</label>
+                        <input
+                          type="text"
+                          value={ch.genre}
+                          onChange={(e) => updateDialChannel(idx, { ...ch, genre: e.target.value })}
+                          className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-1">Instrumentos Incluidos</label>
+                        <input
+                          type="text"
+                          value={ch.instruments}
+                          onChange={(e) => updateDialChannel(idx, { ...ch, instruments: e.target.value })}
+                          className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] text-gray-400 mb-1">Instrumentos Incluidos</label>
-                      <input
-                        type="text"
-                        value={ch.instruments}
-                        onChange={(e) => updateDialChannel(idx, { ...ch, instruments: e.target.value })}
-                        className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs"
-                      />
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-1">Enlace de Audio MP3 (opcional)</label>
+                        <input
+                          type="url"
+                          placeholder="https://.../audio.mp3"
+                          value={ch.audioUrl || ''}
+                          onChange={(e) => updateDialChannel(idx, { ...ch, audioUrl: e.target.value })}
+                          className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs focus:border-[#f59e0b]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-1">Enlace de YouTube Video/Sesión (opcional)</label>
+                        <input
+                          type="url"
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          value={ch.youtubeUrl || ''}
+                          onChange={(e) => updateDialChannel(idx, { ...ch, youtubeUrl: e.target.value })}
+                          className="w-full bg-[#161b22] border border-[#21262d] rounded-lg px-3 py-1.5 text-white text-xs focus:border-red-500"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

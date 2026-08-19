@@ -34,6 +34,30 @@ import { ClubMelomanosSection } from './components/ClubMelomanosSection';
 import { AdminModal } from './components/AdminModal';
 import { AdminPanel } from './components/AdminPanel';
 
+const getYouTubeEmbedUrl = (url?: string) => {
+  if (!url) return '';
+  let videoId = '';
+  if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+  } else if (url.includes('watch?v=')) {
+    videoId = url.split('watch?v=')[1]?.split('&')[0] || '';
+  } else if (url.includes('embed/')) {
+    videoId = url.split('embed/')[1]?.split('?')[0] || '';
+  }
+  if (!videoId) return '';
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+};
+
+const DEFAULT_STATION_COLORS = [
+  '#f59e0b',
+  '#06b6d4',
+  '#ec4899',
+  '#a855f7',
+  '#10b981',
+  '#ef4444',
+  '#3b82f6'
+];
+
 function MainContent() {
   const { siteTexts, dialChannels, setIsAdminOpen, isAdminLoggedIn } = useAppContext();
 
@@ -48,8 +72,11 @@ function MainContent() {
     freq: '88.5 FM',
     genre: 'Rock & Blues',
     instruments: 'Guitarra Eléctrica / Bajo / Batería',
-    freqs: [330, 392, 493, 587]
+    freqs: [330, 392, 493, 587],
+    color: '#f59e0b'
   };
+
+  const activeColor = activeChannel.color || DEFAULT_STATION_COLORS[dialIndex % DEFAULT_STATION_COLORS.length];
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const activeNodesRef = useRef<OscillatorNode[]>([]);
@@ -110,16 +137,24 @@ function MainContent() {
     if (isPlaying) {
       stopSound();
     } else {
-      playSound();
+      if (!activeChannel.youtubeUrl && !activeChannel.audioUrl) {
+        playSound();
+      } else {
+        setIsPlaying(true);
+      }
     }
   };
 
   const handleSelectDialIndex = (idx: number) => {
     setDialIndex(idx);
     const targetChannel = dialChannels[idx];
-    if (isPlaying && targetChannel) {
+    if (isPlaying) {
       stopSound();
-      playSound(targetChannel.freqs);
+      if (targetChannel && !targetChannel.youtubeUrl && !targetChannel.audioUrl) {
+        playSound(targetChannel.freqs);
+      } else {
+        setIsPlaying(true);
+      }
     }
   };
 
@@ -401,24 +436,53 @@ function MainContent() {
               <div className="w-full md:w-auto flex flex-wrap justify-center gap-2">
                 {dialChannels.map((ch, idx) => {
                   const isSelected = idx === dialIndex;
+                  const stColor = ch.color || DEFAULT_STATION_COLORS[idx % DEFAULT_STATION_COLORS.length];
                   return (
                     <button 
                       key={idx}
                       onClick={() => handleSelectDialIndex(idx)} 
-                      className={`px-4 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 ${
-                        isSelected ? 'bg-[#f59e0b]/20 border-[#f59e0b] text-white' : 'bg-[#161b22] border-[#21262d] text-gray-200 hover:border-[#f59e0b]'
-                      }`}
+                      style={{
+                        borderColor: isSelected ? stColor : `${stColor}55`,
+                        backgroundColor: isSelected ? `${stColor}25` : '#161b22',
+                        boxShadow: isSelected ? `0 0 16px ${stColor}55` : 'none',
+                        color: isSelected ? '#ffffff' : stColor
+                      }}
+                      className="px-4 py-2.5 rounded-xl border text-xs font-extrabold transition-all flex items-center gap-2 hover:scale-105"
                     >
-                      <Zap className={`w-3.5 h-3.5 ${isSelected ? 'text-[#f59e0b]' : 'text-gray-400'}`} /> {ch.freq} - {ch.genre}
+                      <Zap className="w-3.5 h-3.5" style={{ color: stColor }} />
+                      <span>{ch.freq} - {ch.genre}</span>
                     </button>
                   );
                 })}
               </div>
 
+              {/* Hidden Audio Players (YouTube / Audio File) */}
+              {isPlaying && activeChannel.youtubeUrl && (
+                <iframe
+                  className="hidden"
+                  src={getYouTubeEmbedUrl(activeChannel.youtubeUrl)}
+                  allow="autoplay"
+                  title="Radio Dial YouTube Audio"
+                />
+              )}
+              {isPlaying && activeChannel.audioUrl && (
+                <audio
+                  className="hidden"
+                  src={activeChannel.audioUrl}
+                  autoPlay
+                  loop
+                />
+              )}
+
               {/* Play/Stop Button */}
               <button 
                 onClick={toggleAudio} 
-                className="w-full md:w-auto bg-gradient-to-r from-[#f59e0b] to-[#ff6b4a] text-black font-extrabold px-6 py-3 rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 text-sm"
+                style={{
+                  background: isPlaying 
+                    ? 'linear-gradient(to right, #ef4444, #ff6b4a)' 
+                    : `linear-gradient(to right, ${activeColor}, #ff6b4a)`
+                }}
+                className="w-full md:w-auto text-black font-extrabold px-6 py-3 rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 text-sm"
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                 <span>{isPlaying ? 'Pausar Muestra' : 'Escuchar Muestra'}</span>
@@ -428,8 +492,8 @@ function MainContent() {
             {/* Dial Screen */}
             <div className="mt-6 bg-[#161b22] rounded-2xl p-6 border border-[#21262d] flex flex-col sm:flex-row items-center justify-between gap-6">
               <div>
-                <div className="text-xs text-[#f59e0b] font-mono uppercase tracking-widest flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`}></span>
+                <div className="text-xs font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: activeColor }}>
+                  <span className={`w-2.5 h-2.5 rounded-full ${isPlaying ? 'animate-pulse' : 'bg-gray-500'}`} style={{ backgroundColor: isPlaying ? activeColor : undefined }}></span>
                   Sintonizando: <span className="font-bold text-white">{activeChannel.freq}</span>
                 </div>
                 <h3 className="text-2xl font-extrabold text-white mt-1">{activeChannel.genre}</h3>
@@ -438,11 +502,11 @@ function MainContent() {
 
               {/* Equalizer Animation */}
               <div className="flex items-end gap-1.5 h-12 w-32 bg-[#0d1117]/80 p-2 rounded-lg border border-[#21262d] justify-center">
-                <div className={`w-2 bg-[#f59e0b] rounded-full ${isPlaying ? 'equalizer-bar' : 'h-3'}`} style={{ animationDuration: '0.6s' }}></div>
-                <div className={`w-2 bg-[#ff6b4a] rounded-full ${isPlaying ? 'equalizer-bar' : 'h-5'}`} style={{ animationDuration: '0.9s' }}></div>
-                <div className={`w-2 bg-cyan-400 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-2'}`} style={{ animationDuration: '0.4s' }}></div>
-                <div className={`w-2 bg-purple-400 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-4'}`} style={{ animationDuration: '0.7s' }}></div>
-                <div className={`w-2 bg-emerald-400 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-2.5'}`} style={{ animationDuration: '0.5s' }}></div>
+                <div className={`w-2 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-3'}`} style={{ backgroundColor: activeColor, animationDuration: '0.6s' }}></div>
+                <div className={`w-2 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-5'}`} style={{ backgroundColor: '#ff6b4a', animationDuration: '0.9s' }}></div>
+                <div className={`w-2 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-2'}`} style={{ backgroundColor: '#06b6d4', animationDuration: '0.4s' }}></div>
+                <div className={`w-2 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-4'}`} style={{ backgroundColor: '#a855f7', animationDuration: '0.7s' }}></div>
+                <div className={`w-2 rounded-full ${isPlaying ? 'equalizer-bar' : 'h-2.5'}`} style={{ backgroundColor: '#10b981', animationDuration: '0.5s' }}></div>
               </div>
             </div>
           </div>

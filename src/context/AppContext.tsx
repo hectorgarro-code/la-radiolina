@@ -15,6 +15,9 @@ export interface DialChannel {
   genre: string;
   instruments: string;
   freqs: number[];
+  audioUrl?: string;
+  youtubeUrl?: string;
+  color?: string;
 }
 
 export interface SiteTexts {
@@ -38,10 +41,10 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
 };
 
 const DEFAULT_DIAL_CHANNELS: DialChannel[] = [
-  { freq: '88.5 FM', genre: 'Rock & Blues', instruments: 'Guitarra Eléctrica / Bajo / Batería', freqs: [330, 392, 493, 587] },
-  { freq: '94.1 FM', genre: 'Jazz & Bossa', instruments: 'Piano / Teclado / Bajos suaves', freqs: [261, 329, 392, 493] },
-  { freq: '102.7 FM', genre: 'Pop & Acústico', instruments: 'Guitarra Criolla / Ukelele / Teclado', freqs: [293, 370, 440, 554] },
-  { freq: '106.3 FM', genre: 'Groove & Ritmo', instruments: 'Batería / Percusión / Bajo', freqs: [110, 146, 164, 220] }
+  { freq: '88.5 FM', genre: 'Rock & Blues', instruments: 'Guitarra Eléctrica / Bajo / Batería', freqs: [330, 392, 493, 587], color: '#f59e0b', youtubeUrl: 'https://www.youtube.com/watch?v=5aK7XnOnd3E' },
+  { freq: '94.1 FM', genre: 'Jazz & Bossa', instruments: 'Piano / Teclado / Bajos suaves', freqs: [261, 329, 392, 493], color: '#06b6d4' },
+  { freq: '102.7 FM', genre: 'Pop & Acústico', instruments: 'Guitarra Criolla / Ukelele / Teclado', freqs: [293, 370, 440, 554], color: '#ec4899' },
+  { freq: '106.3 FM', genre: 'Groove & Ritmo', instruments: 'Batería / Percusión / Bajo', freqs: [110, 146, 164, 220], color: '#a855f7' }
 ];
 
 interface AppContextType {
