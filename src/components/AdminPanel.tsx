@@ -58,7 +58,7 @@ export const AdminPanel: React.FC = () => {
     fecha: 'Agosto 2026',
     imagenUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600&auto=format&fit=crop',
     youtubeUrl: '',
-    tags: ['Estudio', 'Práctica']
+    tagsInput: 'Solo, Rock Clásico, Electrica'
   });
 
   const [newRecurso, setNewRecurso] = useState({
@@ -104,7 +104,20 @@ export const AdminPanel: React.FC = () => {
   const handleAddAlumno = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAlumno.titulo || !newAlumno.nombre) return;
-    addAlumno(newAlumno);
+    const tags = newAlumno.tagsInput
+      ? newAlumno.tagsInput.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
+      : ['Práctica'];
+    addAlumno({
+      nombre: newAlumno.nombre,
+      instrumento: newAlumno.instrumento,
+      titulo: newAlumno.titulo,
+      descripcion: newAlumno.descripcion,
+      duracion: newAlumno.duracion,
+      fecha: newAlumno.fecha,
+      imagenUrl: newAlumno.imagenUrl,
+      youtubeUrl: newAlumno.youtubeUrl,
+      tags
+    });
     setNewAlumno({
       nombre: '',
       instrumento: 'Guitarra Eléctrica',
@@ -114,7 +127,7 @@ export const AdminPanel: React.FC = () => {
       fecha: 'Agosto 2026',
       imagenUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600&auto=format&fit=crop',
       youtubeUrl: '',
-      tags: ['Estudio']
+      tagsInput: 'Solo, Rock Clásico'
     });
     showNotify('¡Grabación de alumno agregada!');
   };
@@ -363,14 +376,25 @@ export const AdminPanel: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <input
-                    type="url"
-                    placeholder="Enlace de YouTube (opcional, ej: https://www.youtube.com/watch?v=...)"
-                    value={newAlumno.youtubeUrl}
-                    onChange={(e) => setNewAlumno({ ...newAlumno, youtubeUrl: e.target.value })}
-                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
-                  />
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="url"
+                      placeholder="Enlace de YouTube (opcional, ej: https://www.youtube.com/watch?v=...)"
+                      value={newAlumno.youtubeUrl}
+                      onChange={(e) => setNewAlumno({ ...newAlumno, youtubeUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Hashtags (separados por coma, ej: Solo, Rock, Batería)"
+                      value={newAlumno.tagsInput}
+                      onChange={(e) => setNewAlumno({ ...newAlumno, tagsInput: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-[#f59e0b]"
+                    />
+                  </div>
                 </div>
 
                 <button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2">
@@ -389,7 +413,11 @@ export const AdminPanel: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
-                              updateAlumno(a.id, editingAlumnoData);
+                              const tags = (editingAlumnoData as any).tagsInput !== undefined
+                                ? (editingAlumnoData as any).tagsInput.split(',').map((t: string) => t.trim().replace(/^#/, '')).filter(Boolean)
+                                : (editingAlumnoData.tags || []);
+                              const { tagsInput, ...dataToSave } = editingAlumnoData as any;
+                              updateAlumno(a.id, { ...dataToSave, tags });
                               setEditingAlumnoId(null);
                               showNotify('¡Grabación de alumno actualizada!');
                             }}
@@ -443,7 +471,7 @@ export const AdminPanel: React.FC = () => {
                           className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
                         />
                       </div>
-                      <div className="grid sm:grid-cols-2 gap-2">
+                      <div className="grid sm:grid-cols-3 gap-2">
                         <div>
                           <label className="text-[10px] text-gray-400 block mb-1">Enlace YouTube</label>
                           <input
@@ -462,6 +490,15 @@ export const AdminPanel: React.FC = () => {
                             className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
                           />
                         </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Hashtags (separados por coma)</label>
+                          <input
+                            type="text"
+                            value={(editingAlumnoData as any).tagsInput !== undefined ? (editingAlumnoData as any).tagsInput : (editingAlumnoData.tags ? editingAlumnoData.tags.join(', ') : '')}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, tagsInput: e.target.value } as any)}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-[#f59e0b]"
+                          />
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -478,6 +515,13 @@ export const AdminPanel: React.FC = () => {
                         </div>
                         <p className="text-xs text-gray-400 font-medium">{a.titulo}</p>
                         <p className="text-[11px] text-gray-500 font-light truncate max-w-md">{a.descripcion}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {a.tags?.map(t => (
+                            <span key={t} className="text-[9px] bg-[#161b22] text-[#f59e0b] border border-[#21262d] px-1.5 py-0.5 rounded">
+                              #{t}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
