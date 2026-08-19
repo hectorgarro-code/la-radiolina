@@ -56,10 +56,12 @@ interface AppContextType {
   
   alumnos: AlumnoItem[];
   addAlumno: (item: Omit<AlumnoItem, 'id'>) => void;
+  updateAlumno: (id: string, item: Partial<AlumnoItem>) => void;
   deleteAlumno: (id: string) => void;
   
   recursos: RecursoItem[];
   addRecurso: (item: Omit<RecursoItem, 'id'>) => void;
+  updateRecurso: (id: string, item: Partial<RecursoItem>) => void;
   deleteRecurso: (id: string) => void;
   
   dialChannels: DialChannel[];
@@ -67,6 +69,7 @@ interface AppContextType {
   
   radioSets: RadioSetItem[];
   addRadioSet: (item: Omit<RadioSetItem, 'id'>) => void;
+  updateRadioSet: (id: string, item: Partial<RadioSetItem>) => void;
   deleteRadioSet: (id: string) => void;
   
   eventoClub: EventoClub;
@@ -159,6 +162,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAlumnos(prev => [newItem, ...prev]);
   };
 
+  const updateAlumno = (id: string, item: Partial<AlumnoItem>) => {
+    setAlumnos(prev => prev.map(a => a.id === id ? { ...a, ...item } : a));
+  };
+
   const deleteAlumno = (id: string) => {
     setAlumnos(prev => prev.filter(a => a.id !== id));
   };
@@ -166,6 +173,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addRecurso = (item: Omit<RecursoItem, 'id'>) => {
     const newItem: RecursoItem = { ...item, id: Date.now().toString() };
     setRecursos(prev => [newItem, ...prev]);
+  };
+
+  const updateRecurso = (id: string, item: Partial<RecursoItem>) => {
+    setRecursos(prev => prev.map(r => r.id === id ? { ...r, ...item } : r));
   };
 
   const deleteRecurso = (id: string) => {
@@ -183,6 +194,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addRadioSet = (item: Omit<RadioSetItem, 'id'>) => {
     const newItem: RadioSetItem = { ...item, id: Date.now().toString() };
     setRadioSets(prev => [newItem, ...prev]);
+  };
+
+  const updateRadioSet = (id: string, item: Partial<RadioSetItem>) => {
+    setRadioSets(prev => prev.map(s => s.id === id ? { ...s, ...item } : s));
   };
 
   const deleteRadioSet = (id: string) => {
@@ -214,14 +229,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateSiteTexts,
       alumnos,
       addAlumno,
+      updateAlumno,
       deleteAlumno,
       recursos,
       addRecurso,
+      updateRecurso,
       deleteRecurso,
       dialChannels,
       updateDialChannel,
       radioSets,
       addRadioSet,
+      updateRadioSet,
       deleteRadioSet,
       eventoClub,
       updateEventoClub,

@@ -13,8 +13,10 @@ import {
   Save, 
   RotateCcw,
   CheckCircle2,
-  FileText
+  FileText,
+  Pencil
 } from 'lucide-react';
+import { AlumnoItem, RecursoItem, RadioSetItem } from '../data/mockData';
 
 export const AdminPanel: React.FC = () => {
   const { 
@@ -26,14 +28,17 @@ export const AdminPanel: React.FC = () => {
     updateSiteTexts,
     alumnos,
     addAlumno,
+    updateAlumno,
     deleteAlumno,
     recursos,
     addRecurso,
+    updateRecurso,
     deleteRecurso,
     dialChannels,
     updateDialChannel,
     radioSets,
     addRadioSet,
+    updateRadioSet,
     deleteRadioSet,
     eventoClub,
     updateEventoClub,
@@ -77,7 +82,14 @@ export const AdminPanel: React.FC = () => {
     youtubeUrl: ''
   });
 
-  if (!isAdminOpen || !isAdminLoggedIn) return null;
+  const [editingAlumnoId, setEditingAlumnoId] = useState<string | null>(null);
+  const [editingAlumnoData, setEditingAlumnoData] = useState<Partial<AlumnoItem>>({});
+
+  const [editingRecursoId, setEditingRecursoId] = useState<string | null>(null);
+  const [editingRecursoData, setEditingRecursoData] = useState<Partial<RecursoItem>>({});
+
+  const [editingRadioSetId, setEditingRadioSetId] = useState<string | null>(null);
+  const [editingRadioSetData, setEditingRadioSetData] = useState<Partial<RadioSetItem>>({});
 
   const showNotify = (msg: string) => {
     setSaveNotification(msg);
@@ -382,27 +394,121 @@ export const AdminPanel: React.FC = () => {
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-gray-400 uppercase">Grabaciones Actuales</h4>
                 {alumnos.map((a) => (
-                  <div key={a.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-sm">{a.nombre}</span>
-                        <span className="text-xs text-[#f59e0b]">({a.instrumento})</span>
-                        {a.youtubeUrl && (
-                          <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
-                            YouTube
-                          </span>
-                        )}
+                  editingAlumnoId === a.id ? (
+                    <div key={a.id} className="bg-[#161b22] p-4 rounded-xl border border-emerald-500/50 space-y-3 w-full">
+                      <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                        <span className="text-xs font-bold text-emerald-400">Editando Grabación de {a.nombre}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              updateAlumno(a.id, editingAlumnoData);
+                              setEditingAlumnoId(null);
+                              showNotify('¡Grabación de alumno actualizada!');
+                            }}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Guardar
+                          </button>
+                          <button
+                            onClick={() => setEditingAlumnoId(null)}
+                            className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" /> Cancelar
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-400 font-medium">{a.titulo}</p>
+                      <div className="grid sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Nombre Alumno</label>
+                          <input
+                            type="text"
+                            value={editingAlumnoData.nombre || ''}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, nombre: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Instrumento</label>
+                          <input
+                            type="text"
+                            value={editingAlumnoData.instrumento || ''}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, instrumento: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Título de la Obra</label>
+                          <input
+                            type="text"
+                            value={editingAlumnoData.titulo || ''}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, titulo: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                        <textarea
+                          rows={2}
+                          value={editingAlumnoData.descripcion || ''}
+                          onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, descripcion: e.target.value })}
+                          className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
+                        />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Enlace YouTube</label>
+                          <input
+                            type="text"
+                            value={editingAlumnoData.youtubeUrl || ''}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, youtubeUrl: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Duración</label>
+                          <input
+                            type="text"
+                            value={editingAlumnoData.duracion || ''}
+                            onChange={(e) => setEditingAlumnoData({ ...editingAlumnoData, duracion: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteAlumno(a.id)}
-                      className="text-gray-500 hover:text-red-400 p-2"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  ) : (
+                    <div key={a.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">{a.nombre}</span>
+                          <span className="text-xs text-[#f59e0b]">({a.instrumento})</span>
+                          {a.youtubeUrl && (
+                            <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
+                              YouTube
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 font-medium">{a.titulo}</p>
+                        <p className="text-[11px] text-gray-500 font-light truncate max-w-md">{a.descripcion}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => { setEditingAlumnoId(a.id); setEditingAlumnoData(a); }}
+                          className="text-gray-400 hover:text-[#f59e0b] p-2 transition-colors"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteAlumno(a.id)}
+                          className="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ))}
               </div>
             </div>
@@ -450,18 +556,84 @@ export const AdminPanel: React.FC = () => {
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-gray-400 uppercase">Recursos Publicados</h4>
                 {recursos.map((r) => (
-                  <div key={r.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
-                    <div>
-                      <span className="text-xs font-bold text-cyan-400">{r.categoria}</span>
-                      <h5 className="font-bold text-white text-sm">{r.titulo}</h5>
+                  editingRecursoId === r.id ? (
+                    <div key={r.id} className="bg-[#161b22] p-4 rounded-xl border border-cyan-500/50 space-y-3 w-full">
+                      <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                        <span className="text-xs font-bold text-cyan-400">Editando Recurso: {r.titulo}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              updateRecurso(r.id, editingRecursoData);
+                              setEditingRecursoId(null);
+                              showNotify('¡Recurso actualizado!');
+                            }}
+                            className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Guardar
+                          </button>
+                          <button
+                            onClick={() => setEditingRecursoId(null)}
+                            className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" /> Cancelar
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Título del Recurso</label>
+                          <input
+                            type="text"
+                            value={editingRecursoData.titulo || ''}
+                            onChange={(e) => setEditingRecursoData({ ...editingRecursoData, titulo: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Categoría</label>
+                          <input
+                            type="text"
+                            value={editingRecursoData.categoria || ''}
+                            onChange={(e) => setEditingRecursoData({ ...editingRecursoData, categoria: e.target.value as any })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                        <textarea
+                          rows={2}
+                          value={editingRecursoData.descripcion || ''}
+                          onChange={(e) => setEditingRecursoData({ ...editingRecursoData, descripcion: e.target.value })}
+                          className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
+                        />
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteRecurso(r.id)}
-                      className="text-gray-500 hover:text-red-400 p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  ) : (
+                    <div key={r.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-xs font-bold text-cyan-400">{r.categoria}</span>
+                        <h5 className="font-bold text-white text-sm">{r.titulo}</h5>
+                        <p className="text-[11px] text-gray-500 font-light truncate max-w-md">{r.descripcion}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => { setEditingRecursoId(r.id); setEditingRecursoData(r); }}
+                          className="text-gray-400 hover:text-cyan-400 p-2 transition-colors"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteRecurso(r.id)}
+                          className="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ))}
               </div>
             </div>
@@ -569,25 +741,120 @@ export const AdminPanel: React.FC = () => {
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-gray-400 uppercase">Mezclas Publicadas</h4>
                 {radioSets.map((s) => (
-                  <div key={s.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-purple-400">{s.frecuencia} - {s.genero}</span>
-                        {s.youtubeUrl && (
-                          <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
-                            YouTube Audio
-                          </span>
-                        )}
+                  editingRadioSetId === s.id ? (
+                    <div key={s.id} className="bg-[#161b22] p-4 rounded-xl border border-purple-500/50 space-y-3 w-full">
+                      <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                        <span className="text-xs font-bold text-purple-400">Editando Radio Set: {s.titulo}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              updateRadioSet(s.id, editingRadioSetData);
+                              setEditingRadioSetId(null);
+                              showNotify('¡Radio Set actualizado!');
+                            }}
+                            className="bg-purple-500 hover:bg-purple-600 text-black font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Guardar
+                          </button>
+                          <button
+                            onClick={() => setEditingRadioSetId(null)}
+                            className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" /> Cancelar
+                          </button>
+                        </div>
                       </div>
-                      <h5 className="font-bold text-white text-sm">{s.titulo}</h5>
+                      <div className="grid sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Título de la Mezcla</label>
+                          <input
+                            type="text"
+                            value={editingRadioSetData.titulo || ''}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, titulo: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Género</label>
+                          <input
+                            type="text"
+                            value={editingRadioSetData.genero || ''}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, genero: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Frecuencia</label>
+                          <input
+                            type="text"
+                            value={editingRadioSetData.frecuencia || ''}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, frecuencia: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                        <textarea
+                          rows={2}
+                          value={editingRadioSetData.descripcion || ''}
+                          onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, descripcion: e.target.value })}
+                          className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg p-2 text-white text-xs"
+                        />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Enlace de YouTube (video o playlist)</label>
+                          <input
+                            type="text"
+                            value={editingRadioSetData.youtubeUrl || ''}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, youtubeUrl: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-red-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 block mb-1">Duración</label>
+                          <input
+                            type="text"
+                            value={editingRadioSetData.duracion || ''}
+                            onChange={(e) => setEditingRadioSetData({ ...editingRadioSetData, duracion: e.target.value })}
+                            className="w-full bg-[#0d1117] border border-[#21262d] rounded-lg px-2.5 py-1.5 text-white text-xs"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteRadioSet(s.id)}
-                      className="text-gray-500 hover:text-red-400 p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  ) : (
+                    <div key={s.id} className="bg-[#0d1117] p-4 rounded-xl border border-[#21262d] flex items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-purple-400">{s.frecuencia} - {s.genero}</span>
+                          {s.youtubeUrl && (
+                            <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-mono">
+                              YouTube Audio
+                            </span>
+                          )}
+                        </div>
+                        <h5 className="font-bold text-white text-sm">{s.titulo}</h5>
+                        <p className="text-[11px] text-gray-500 font-light truncate max-w-md">{s.descripcion}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => { setEditingRadioSetId(s.id); setEditingRadioSetData(s); }}
+                          className="text-gray-400 hover:text-purple-400 p-2 transition-colors"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteRadioSet(s.id)}
+                          className="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ))}
               </div>
             </div>
