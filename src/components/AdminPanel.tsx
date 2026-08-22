@@ -17,9 +17,25 @@ import {
   FileText,
   Pencil,
   Guitar,
-  Layers
+  Layers,
+  Instagram,
+  Upload,
+  Image as ImageIcon,
+  ExternalLink,
+  RefreshCw,
+  Sparkles,
+  Youtube,
+  MessageCircle,
+  Mail,
+  MapPin
 } from 'lucide-react';
 import { AlumnoItem, RecursoItem, RadioSetItem } from '../data/mockData';
+
+export const TikTokIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.47 6.27 6.27 0 0 0 1.94-4.47V8.5a8.27 8.27 0 0 0 4.83 1.56V6.69Z" />
+  </svg>
+);
 
 export const AdminPanel: React.FC = () => {
   const { 
@@ -128,11 +144,38 @@ export const AdminPanel: React.FC = () => {
   const [editingRadioSetId, setEditingRadioSetId] = useState<string | null>(null);
   const [editingRadioSetData, setEditingRadioSetData] = useState<Partial<RadioSetItem>>({});
 
+  const [isUploadingHero, setIsUploadingHero] = useState<boolean>(false);
+
   if (!isAdminOpen || !isAdminLoggedIn) return null;
 
   const showNotify = (msg: string) => {
     setSaveNotification(msg);
     setTimeout(() => setSaveNotification(null), 2500);
+  };
+
+  const handleHeroImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('La imagen seleccionada supera los 8MB. Por favor elige una imagen de menor peso.');
+      return;
+    }
+
+    setIsUploadingHero(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        updateSiteTexts({ heroImageUrl: reader.result });
+        showNotify('¡Foto de Hero subida y aplicada con éxito!');
+      }
+      setIsUploadingHero(false);
+    };
+    reader.onerror = () => {
+      alert('Error al leer el archivo de imagen.');
+      setIsUploadingHero(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveTexts = (e: React.FormEvent) => {
@@ -362,103 +405,301 @@ export const AdminPanel: React.FC = () => {
           
           {/* TAB 1: Textos & Hero */}
           {activeTab === 'textos' && (
-            <form onSubmit={handleSaveTexts} className="space-y-4 max-w-3xl">
-              <h4 className="text-sm font-bold text-[#f59e0b] uppercase tracking-wider">Edición de Títulos y Frases</h4>
+            <form onSubmit={handleSaveTexts} className="space-y-6 max-w-3xl">
               
-              <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1">Título Principal (Hero H1)</label>
-                <input
-                  type="text"
-                  value={siteTexts.heroTitle}
-                  onChange={(e) => updateSiteTexts({ heroTitle: e.target.value })}
-                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
-                />
+              {/* Sección Foto de Portada / Hero Image */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-[#f59e0b]/10 border border-[#f59e0b]/30 flex items-center justify-center text-[#f59e0b]">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">Foto Principal de Hero (Portada)</h4>
+                      <p className="text-xs text-gray-400">Personalizá la imagen que se muestra en la sección principal del sitio.</p>
+                    </div>
+                  </div>
+
+                  {siteTexts.heroImageUrl && siteTexts.heroImageUrl !== '/hero_electric_bass.jpg' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateSiteTexts({ heroImageUrl: '/hero_electric_bass.jpg' });
+                        showNotify('¡Foto restaurada a la original!');
+                      }}
+                      className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161b22] border border-[#21262d] transition-colors"
+                      title="Restablecer imagen por defecto"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Restablecer Original</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Preview & Upload Controls */}
+                <div className="grid sm:grid-cols-12 gap-4 items-center">
+                  <div className="sm:col-span-5 relative group rounded-xl overflow-hidden border-2 border-[#21262d] bg-black/40 h-44 flex items-center justify-center">
+                    <img 
+                      src={siteTexts.heroImageUrl || '/hero_electric_bass.jpg'} 
+                      alt="Vista previa Hero" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2.5">
+                      <span className="text-[11px] font-bold text-white bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm border border-white/10">
+                        Vista Previa en Vivo
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-7 space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1.5">Subir Foto desde tu Computadora</label>
+                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-[#30363d] hover:border-[#f59e0b] bg-[#161b22]/70 hover:bg-[#161b22] rounded-xl p-3.5 cursor-pointer transition-colors group">
+                        <Upload className="w-6 h-6 text-gray-400 group-hover:text-[#f59e0b] mb-1 transition-colors" />
+                        <span className="text-xs font-semibold text-gray-200 group-hover:text-white">
+                          {isUploadingHero ? 'Procesando imagen...' : 'Elegir archivo de imagen (JPG, PNG, WEBP)'}
+                        </span>
+                        <span className="text-[11px] text-gray-400">Hasta 8MB • Se aplica inmediatamente</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleHeroImageFile} 
+                          className="hidden" 
+                          disabled={isUploadingHero}
+                        />
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1">O usar una URL directa de imagen web:</label>
+                      <input
+                        type="url"
+                        placeholder="https://images.unsplash.com/... o enlace directo"
+                        value={siteTexts.heroImageUrl || ''}
+                        onChange={(e) => updateSiteTexts({ heroImageUrl: e.target.value })}
+                        className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1">Frase Destacada (Gradiente)</label>
-                <input
-                  type="text"
-                  value={siteTexts.heroHighlight}
-                  onChange={(e) => updateSiteTexts({ heroHighlight: e.target.value })}
-                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1">Descripción General de La Radiolina</label>
-                <textarea
-                  rows={3}
-                  value={siteTexts.heroDescription}
-                  onChange={(e) => updateSiteTexts({ heroDescription: e.target.value })}
-                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl p-3 text-white text-sm"
-                />
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
+              {/* Títulos y Frases */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <h4 className="text-sm font-bold text-[#f59e0b] uppercase tracking-wider">Títulos y Frases Principales</h4>
+                
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Título Principal (Hero H1)</label>
                   <input
                     type="text"
-                    value={siteTexts.whatsappPhone}
-                    onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    value={siteTexts.heroTitle}
+                    onChange={(e) => updateSiteTexts({ heroTitle: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Email de Destino para Consultas</label>
-                  <input
-                    type="email"
-                    placeholder="ej: contacto@laradiolina.com"
-                    value={siteTexts.contactEmail || ''}
-                    onChange={(e) => updateSiteTexts({ contactEmail: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1">Enlace al Canal Oficial de YouTube</label>
-                <input
-                  type="url"
-                  placeholder="ej: https://www.youtube.com/@laradiolina"
-                  value={siteTexts.youtubeChannelUrl || ''}
-                  onChange={(e) => updateSiteTexts({ youtubeChannelUrl: e.target.value })}
-                  className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
-                />
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Dirección Física del Estudio (Texto)</label>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Frase Destacada (Gradiente)</label>
                   <input
                     type="text"
-                    placeholder="ej: Costa del Este, Partido de La Costa, Buenos Aires"
-                    value={siteTexts.addressText || ''}
-                    onChange={(e) => updateSiteTexts({ addressText: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    value={siteTexts.heroHighlight}
+                    onChange={(e) => updateSiteTexts({ heroHighlight: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">URL / Iframe de Google Maps</label>
-                  <input
-                    type="text"
-                    placeholder="ej: https://www.google.com/maps/embed?pb=..."
-                    value={siteTexts.googleMapsUrl || ''}
-                    onChange={(e) => updateSiteTexts({ googleMapsUrl: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                  <label className="block text-xs font-bold text-gray-300 mb-1">Descripción General de La Radiolina</label>
+                  <textarea
+                    rows={3}
+                    value={siteTexts.heroDescription}
+                    onChange={(e) => updateSiteTexts({ heroDescription: e.target.value })}
+                    className="w-full bg-[#161b22] border border-[#21262d] rounded-xl p-3 text-white text-sm"
                   />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="bg-[#f59e0b] hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-xl text-xs flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" /> Guardar Textos Principales
-              </button>
+              {/* Redes Sociales & Canales Oficiales */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                    <Instagram className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Redes Sociales & Canales Oficiales</h4>
+                    <p className="text-xs text-gray-400">Configurá los enlaces directos a tus cuentas y comunidades.</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {/* Instagram */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-pink-400 flex items-center gap-1.5">
+                        <Instagram className="w-3.5 h-3.5" /> Instagram Oficial
+                      </label>
+                      {siteTexts.instagramUrl && (
+                        <a
+                          href={siteTexts.instagramUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-gray-400 hover:text-white flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Probar
+                        </a>
+                      )}
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://instagram.com/laradiolina"
+                      value={siteTexts.instagramUrl || ''}
+                      onChange={(e) => updateSiteTexts({ instagramUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-pink-500"
+                    />
+                  </div>
+
+                  {/* TikTok */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                        <TikTokIcon className="w-3.5 h-3.5" /> TikTok Oficial
+                      </label>
+                      {siteTexts.tiktokUrl && (
+                        <a
+                          href={siteTexts.tiktokUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-gray-400 hover:text-white flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Probar
+                        </a>
+                      )}
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://tiktok.com/@laradiolina"
+                      value={siteTexts.tiktokUrl || ''}
+                      onChange={(e) => updateSiteTexts({ tiktokUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-400"
+                    />
+                  </div>
+
+                  {/* YouTube */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                        <Youtube className="w-3.5 h-3.5" /> Canal de YouTube
+                      </label>
+                      {siteTexts.youtubeChannelUrl && (
+                        <a
+                          href={siteTexts.youtubeChannelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-gray-400 hover:text-white flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Probar
+                        </a>
+                      )}
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://www.youtube.com/@laradiolina"
+                      value={siteTexts.youtubeChannelUrl || ''}
+                      onChange={(e) => updateSiteTexts({ youtubeChannelUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-red-500"
+                    />
+                  </div>
+
+                  {/* Discord */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" /> Servidor Discord / Club
+                      </label>
+                      {siteTexts.discordUrl && (
+                        <a
+                          href={siteTexts.discordUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-gray-400 hover:text-white flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Probar
+                        </a>
+                      )}
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://discord.gg/radiolina"
+                      value={siteTexts.discordUrl || ''}
+                      onChange={(e) => updateSiteTexts({ discordUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-3 py-2 text-white text-xs focus:border-indigo-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contacto & Ubicación */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <h4 className="text-sm font-bold text-[#f59e0b] uppercase tracking-wider">Contacto & Ubicación</h4>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                    <input
+                      type="text"
+                      placeholder="ej: 5491112345678"
+                      value={siteTexts.whatsappPhone}
+                      onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Email de Destino para Consultas</label>
+                    <input
+                      type="email"
+                      placeholder="ej: contacto@laradiolina.com"
+                      value={siteTexts.contactEmail || ''}
+                      onChange={(e) => updateSiteTexts({ contactEmail: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Dirección Física del Estudio (Texto)</label>
+                    <input
+                      type="text"
+                      placeholder="ej: Costa del Este, Partido de La Costa, Buenos Aires"
+                      value={siteTexts.addressText || ''}
+                      onChange={(e) => updateSiteTexts({ addressText: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">URL / Iframe de Google Maps</label>
+                    <input
+                      type="text"
+                      placeholder="ej: https://www.google.com/maps/embed?pb=..."
+                      value={siteTexts.googleMapsUrl || ''}
+                      onChange={(e) => updateSiteTexts({ googleMapsUrl: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-[#161b22]/90 backdrop-blur-md p-3 rounded-xl border border-[#21262d] flex items-center justify-between">
+                <span className="text-xs text-gray-400">Los cambios se guardan automáticamente en tu navegador.</span>
+                <button
+                  type="submit"
+                  className="bg-[#f59e0b] hover:bg-amber-400 text-black font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg"
+                >
+                  <Save className="w-4 h-4" /> Guardar Configuración
+                </button>
+              </div>
 
               {/* Sección Instrumentos / Lecciones del Estudio */}
               <div className="pt-8 border-t border-[#21262d] space-y-6">

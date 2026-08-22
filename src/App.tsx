@@ -19,6 +19,8 @@ import {
   Umbrella, 
   MessageCircle, 
   Youtube,
+  Instagram,
+  ExternalLink,
   Award,
   BookOpen,
   Users,
@@ -60,7 +62,7 @@ import { RecursosSection } from './components/RecursosSection';
 import { RadioSetsSection } from './components/RadioSetsSection';
 import { ClubMelomanosSection } from './components/ClubMelomanosSection';
 import { AdminModal } from './components/AdminModal';
-import { AdminPanel } from './components/AdminPanel';
+import { AdminPanel, TikTokIcon } from './components/AdminPanel';
 
 const getYouTubeEmbedUrl = (url?: string) => {
   if (!url) return '';
@@ -324,6 +326,46 @@ function MainContent() {
 
           {/* Direct CTA & Admin Trigger */}
           <div className="flex items-center gap-3">
+            {/* Social Icons Quick Access */}
+            <div className="hidden md:flex items-center gap-1 border-r border-[#21262d] pr-2.5 mr-0.5">
+              {siteTexts.instagramUrl && (
+                <a
+                  href={siteTexts.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-pink-400 p-1.5 rounded-lg hover:bg-[#161b22] transition-colors"
+                  title="Instagram @laradiolina"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {siteTexts.tiktokUrl && (
+                <a
+                  href={siteTexts.tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-cyan-400 p-1.5 rounded-lg hover:bg-[#161b22] transition-colors"
+                  title="TikTok @laradiolina"
+                  aria-label="TikTok"
+                >
+                  <TikTokIcon className="w-4 h-4" />
+                </a>
+              )}
+              {siteTexts.youtubeChannelUrl && (
+                <a
+                  href={siteTexts.youtubeChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-[#161b22] transition-colors"
+                  title="YouTube Oficial"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="w-4 h-4" />
+                </a>
+              )}
+            </div>
+
             <button
               onClick={() => setIsAdminOpen(true)}
               className="bg-[#161b22] hover:bg-[#21262d] border border-[#21262d] text-gray-300 px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -370,6 +412,41 @@ function MainContent() {
             <a href="#quiz" onClick={(e) => { e.preventDefault(); scrollToSection('quiz'); }} className="block text-gray-200 hover:text-[#f59e0b] font-medium flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#ff6b4a]" /> Quiz de Instrumento
             </a>
+
+            {/* Socials inside Mobile Menu */}
+            <div className="flex items-center justify-around py-3 border-y border-[#21262d]">
+              {siteTexts.instagramUrl && (
+                <a
+                  href={siteTexts.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-pink-400 flex items-center gap-1.5 text-xs font-semibold"
+                >
+                  <Instagram className="w-4 h-4" /> Instagram
+                </a>
+              )}
+              {siteTexts.tiktokUrl && (
+                <a
+                  href={siteTexts.tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 flex items-center gap-1.5 text-xs font-semibold"
+                >
+                  <TikTokIcon className="w-4 h-4" /> TikTok
+                </a>
+              )}
+              {siteTexts.youtubeChannelUrl && (
+                <a
+                  href={siteTexts.youtubeChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-red-400 flex items-center gap-1.5 text-xs font-semibold"
+                >
+                  <Youtube className="w-4 h-4" /> YouTube
+                </a>
+              )}
+            </div>
+
             <button
               onClick={() => { setIsMobileMenuOpen(false); setIsAdminOpen(true); }}
               className="w-full text-left font-bold text-[#f59e0b] flex items-center gap-2 py-1"
@@ -384,7 +461,14 @@ function MainContent() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen hero-bg flex items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8">
+      <section 
+        className="relative min-h-screen hero-bg flex items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(13, 17, 23, 0.82), rgba(13, 17, 23, 0.98)), url('${siteTexts.heroImageUrl || "/hero_electric_bass.jpg"}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
         <div className="max-w-7xl mx-auto w-full grid md:grid-cols-12 gap-10 items-center">
           
           <div className="md:col-span-7 space-y-6 text-center md:text-left">
@@ -427,6 +511,43 @@ function MainContent() {
                 <span>Probar El Dial Interactivo</span>
               </button>
             </div>
+
+            {/* Quick Social Links Pills */}
+            <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              {siteTexts.instagramUrl && (
+                <a
+                  href={siteTexts.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22]/90 hover:bg-[#21262d] text-pink-400 border border-pink-500/30 text-xs font-semibold transition-all hover:scale-105"
+                >
+                  <Instagram className="w-3.5 h-3.5" />
+                  <span>Instagram</span>
+                </a>
+              )}
+              {siteTexts.tiktokUrl && (
+                <a
+                  href={siteTexts.tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22]/90 hover:bg-[#21262d] text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition-all hover:scale-105"
+                >
+                  <TikTokIcon className="w-3.5 h-3.5" />
+                  <span>TikTok</span>
+                </a>
+              )}
+              {siteTexts.youtubeChannelUrl && (
+                <a
+                  href={siteTexts.youtubeChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22]/90 hover:bg-[#21262d] text-red-400 border border-red-500/30 text-xs font-semibold transition-all hover:scale-105"
+                >
+                  <Youtube className="w-3.5 h-3.5" />
+                  <span>YouTube</span>
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Visual Hero Card */}
@@ -435,8 +556,8 @@ function MainContent() {
             <div className="relative bg-[#161b22] border border-[#21262d] rounded-3xl p-6 shadow-2xl">
               <div className="relative h-72 rounded-2xl overflow-hidden mb-5">
                 <img 
-                  src="/hero_electric_bass.jpg" 
-                  alt="La Radiolina Espacio Musical - Bajo Eléctrico" 
+                  src={siteTexts.heroImageUrl || "/hero_electric_bass.jpg"} 
+                  alt="La Radiolina Espacio Musical" 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent"></div>
@@ -741,28 +862,87 @@ function MainContent() {
         </div>
       </section>
 
-      {/* YouTube Section */}
-      <section id="youtube" className="py-16 bg-[#161b22]/50 border-t border-[#21262d]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#161b22] border border-[#21262d] rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-3 text-center md:text-left">
-              <span className="text-xs font-bold text-red-500 uppercase tracking-widest flex items-center justify-center md:justify-start gap-1">
-                <Youtube className="w-4 h-4" /> Canal Oficial
-              </span>
-              <h3 className="text-2xl font-bold text-white">La Radiolina en YouTube</h3>
-              <p className="text-xs text-gray-400 max-w-lg">
-                Mirá las grabaciones del estudio, arreglos multi-instrumentales y contenido grabado en el espacio.
-              </p>
+      {/* Redes Sociales & Comunidad Section */}
+      <section id="redes" className="py-20 bg-[#161b22]/50 border-t border-[#21262d]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-widest block mb-2">Comunidad & Contenido</span>
+            <h2 className="text-3xl font-extrabold text-white">Seguinos en Redes y Espacios Oficiales</h2>
+            <p className="mt-2 text-gray-400 text-xs">Mirá las clases, escuchá nuestras producciones y enterate de las novedades día a día.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Instagram Card */}
+            <div className="bg-[#161b22] border border-[#21262d] hover:border-pink-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-4 shadow-lg shadow-pink-500/20">
+                  <Instagram className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold text-pink-400 uppercase tracking-wider">Instagram</span>
+                <h3 className="text-xl font-bold text-white mt-1">@laradiolina</h3>
+                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                  Fotos de los instrumentos, backstage de grabaciones, reels musicales y el día a día del estudio en Costa del Este.
+                </p>
+              </div>
+              <a 
+                href={siteTexts.instagramUrl || "https://instagram.com/laradiolina"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="mt-6 w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-pink-600/20 transition-all"
+              >
+                <Instagram className="w-4 h-4" />
+                <span>Seguir en Instagram</span>
+              </a>
             </div>
-            <a 
-              href={siteTexts.youtubeChannelUrl || "https://youtube.com"} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs transition-colors flex items-center gap-2 shrink-0"
-            >
-              <Youtube className="w-5 h-5" />
-              <span>Visitar Canal de YouTube</span>
-            </a>
+
+            {/* TikTok Card */}
+            <div className="bg-[#161b22] border border-[#21262d] hover:border-cyan-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-cyan-400 mb-4 shadow-lg">
+                  <TikTokIcon className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">TikTok</span>
+                <h3 className="text-xl font-bold text-white mt-1">@laradiolina</h3>
+                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                  Tips rápidos de guitarra y bajo, grooves de batería, ejercicios de ritmo y mini-lecciones dinámicas.
+                </p>
+              </div>
+              <a 
+                href={siteTexts.tiktokUrl || "https://tiktok.com/@laradiolina"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="mt-6 w-full bg-[#0d1117] hover:bg-black text-cyan-400 border border-cyan-500/40 hover:border-cyan-400 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <TikTokIcon className="w-4 h-4" />
+                <span>Ver Clips en TikTok</span>
+              </a>
+            </div>
+
+            {/* YouTube Card */}
+            <div className="bg-[#161b22] border border-[#21262d] hover:border-red-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden sm:col-span-2 lg:col-span-1">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-red-500/10 rounded-full blur-2xl group-hover:bg-red-500/20 transition-all"></div>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center text-white mb-4 shadow-lg shadow-red-600/20">
+                  <Youtube className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">YouTube</span>
+                <h3 className="text-xl font-bold text-white mt-1">Canal Oficial</h3>
+                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                  Grabaciones completas del estudio, radio sets continuos de DJ Profe y tutoriales extensos paso a paso.
+                </p>
+              </div>
+              <a 
+                href={siteTexts.youtubeChannelUrl || "https://youtube.com/@laradiolina"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="mt-6 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 transition-all"
+              >
+                <Youtube className="w-5 h-5" />
+                <span>Visitar Canal de YouTube</span>
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -938,6 +1118,58 @@ function MainContent() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© La Radiolina - Espacio Musical • Costa del Este, Partido de La Costa.</p>
           
+          {/* Social Links in Footer */}
+          <div className="flex items-center gap-3">
+            {siteTexts.instagramUrl && (
+              <a
+                href={siteTexts.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-center text-gray-400 hover:text-pink-400 hover:border-pink-500/50 hover:bg-pink-500/10 transition-all"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+            )}
+            {siteTexts.tiktokUrl && (
+              <a
+                href={siteTexts.tiktokUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all"
+                title="TikTok"
+                aria-label="TikTok"
+              >
+                <TikTokIcon className="w-4 h-4" />
+              </a>
+            )}
+            {siteTexts.youtubeChannelUrl && (
+              <a
+                href={siteTexts.youtubeChannelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-center text-gray-400 hover:text-red-400 hover:border-red-500/50 hover:bg-red-500/10 transition-all"
+                title="YouTube"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+            )}
+            {siteTexts.whatsappPhone && (
+              <a
+                href={`https://wa.me/${siteTexts.whatsappPhone.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-center text-gray-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+                title="WhatsApp"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+
           <button
             onClick={() => setIsAdminOpen(true)}
             className="text-gray-400 hover:text-[#f59e0b] flex items-center gap-1.5 transition-colors font-mono text-[11px]"

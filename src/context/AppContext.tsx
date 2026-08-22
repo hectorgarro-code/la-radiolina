@@ -24,6 +24,9 @@ export interface SiteTexts {
   heroTitle: string;
   heroHighlight: string;
   heroDescription: string;
+  heroImageUrl?: string;
+  instagramUrl?: string;
+  tiktokUrl?: string;
   whatsappPhone: string;
   anualPriceInfo: string;
   veranoPriceInfo: string;
@@ -48,6 +51,9 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   heroTitle: 'Tocá la música que amás.',
   heroHighlight: 'Todos los instrumentos en un solo lugar.',
   heroDescription: 'En La Radiolina contás con un estudio totalmente equipado. Venís sin nada, elegís tu instrumento preferido y aprendés a tu propio ritmo con clases personalizadas.',
+  heroImageUrl: '/hero_electric_bass.jpg',
+  instagramUrl: 'https://instagram.com/laradiolina',
+  tiktokUrl: 'https://tiktok.com/@laradiolina',
   whatsappPhone: '5491112345678',
   anualPriceInfo: 'Consultar Arancel Mensual',
   veranoPriceInfo: 'Consultar Disponibilidad Verano',
@@ -165,7 +171,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Dynamic Data States loaded from localStorage
   const [siteTexts, setSiteTexts] = useState<SiteTexts>(() => {
     const saved = localStorage.getItem('radiolina_texts');
-    return saved ? JSON.parse(saved) : DEFAULT_SITE_TEXTS;
+    return saved ? { ...DEFAULT_SITE_TEXTS, ...JSON.parse(saved) } : DEFAULT_SITE_TEXTS;
   });
 
   const [estudioInstrumentos, setEstudioInstrumentos] = useState<EstudioInstrumento[]>(() => {
