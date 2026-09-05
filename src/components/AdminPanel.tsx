@@ -698,6 +698,20 @@ export const AdminPanel: React.FC = () => {
                       className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Web3Forms Access Key (Envíos directos por Email)</label>
+                    <input
+                      type="text"
+                      placeholder="ej: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      value={siteTexts.web3formsAccessKey || ''}
+                      onChange={(e) => updateSiteTexts({ web3formsAccessKey: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Clave gratuita obtenida en <a href="https://web3forms.com" target="_blank" rel="noopener noreferrer" className="text-[#f59e0b] underline">web3forms.com</a> enviada a {siteTexts.contactEmail || 'tu email'}.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">

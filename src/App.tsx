@@ -32,7 +32,9 @@ import {
   Flame,
   Mail,
   MapPin,
-  Compass
+  Compass,
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 
 export const renderInstrumentIcon = (iconName: string, className?: string, style?: React.CSSProperties) => {
@@ -122,6 +124,8 @@ function MainContent() {
   const [formLevel, setFormLevel] = useState<string>('Desde cero');
   const [formMode, setFormMode] = useState<string>('Ciclo Anual (Residente)');
   const [formMsg, setFormMsg] = useState<string>('');
+  const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
+  const [emailSuccessMsg, setEmailSuccessMsg] = useState<string | null>(null);
 
   const stopSound = () => {
     activeNodesRef.current.forEach((node) => {
@@ -271,11 +275,49 @@ function MainContent() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const sendEmail = (e?: React.FormEvent) => {
+  const sendEmail = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const destEmail = siteTexts.contactEmail || 'contacto@laradiolina.com';
+    setIsSendingEmail(true);
+    setEmailSuccessMsg(null);
+
+    const destEmail = siteTexts.contactEmail || 'laradiolinaespaciomusical@gmail.com';
+    const accessKey = siteTexts.web3formsAccessKey || (import.meta.env as Record<string, string>).VITE_WEB3FORMS_ACCESS_KEY;
+
+    // Send via Web3Forms API if key is available
+    if (accessKey && !accessKey.includes('#radiolina-default')) {
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            name: userName || 'Visita Web',
+            email: userEmail || 'no-especificado@laradiolina.com',
+            subject: `Consulta Clases La Radiolina - ${formInstrument}`,
+            message: `Consulta desde la página web de La Radiolina:\n\n👤 Nombre: ${userName}\n✉️ Email: ${userEmail}\n🎸 Instrumento: ${formInstrument}\n🎯 Nivel: ${formLevel}\n📅 Modalidad: ${formMode}\n💬 Mensaje: ${formMsg}`,
+            from_name: 'La Radiolina Web'
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setEmailSuccessMsg('¡Mensaje enviado con éxito! Te responderemos por correo a la brevedad.');
+          setUserName('');
+          setUserEmail('');
+          setFormMsg('');
+          setIsSendingEmail(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Web3Forms submit error, falling back to mailto:', err);
+      }
+    }
+
+    // Fallback to mailto link if key not set or request fails
     const subject = `Consulta Clases La Radiolina - ${formInstrument}`;
-    
     let body = `Hola La Radiolina!\n\n`;
     body += `Mi Nombre: ${userName || 'No especificado'}\n`;
     body += `Mi Email de contacto: ${userEmail || 'No especificado'}\n`;
@@ -286,6 +328,7 @@ function MainContent() {
     body += `Enviado desde el sitio web de La Radiolina (laradiolina.com)`;
 
     window.location.href = `mailto:${destEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setIsSendingEmail(false);
   };
 
   return (
@@ -1040,6 +1083,13 @@ function MainContent() {
               ></textarea>
             </div>
 
+            {emailSuccessMsg && (
+              <div className="bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 rounded-xl p-4 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>{emailSuccessMsg}</span>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-3 pt-2">
               <button 
                 type="button" 
@@ -1053,10 +1103,15 @@ function MainContent() {
               <button 
                 type="button" 
                 onClick={sendEmail}
-                className="w-full bg-[#161b22] hover:bg-gray-800 border border-[#f59e0b]/50 text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                disabled={isSendingEmail}
+                className="w-full bg-[#161b22] hover:bg-gray-800 border border-[#f59e0b]/50 text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Mail className="w-4 h-4 text-[#f59e0b]" />
-                <span>Enviar por Email</span>
+                {isSendingEmail ? (
+                  <RefreshCw className="w-4 h-4 text-[#f59e0b] animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4 text-[#f59e0b]" />
+                )}
+                <span>{isSendingEmail ? 'Enviando...' : 'Enviar por Email'}</span>
               </button>
             </div>
           </form>

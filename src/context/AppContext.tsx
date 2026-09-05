@@ -40,6 +40,7 @@ export interface SiteTexts {
   discordUrl: string;
   youtubeChannelUrl: string;
   contactEmail: string;
+  web3formsAccessKey?: string;
   addressText: string;
   googleMapsUrl: string;
 }
@@ -68,6 +69,7 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   discordUrl: 'https://discord.com/channels/@me',
   youtubeChannelUrl: 'https://www.youtube.com/@LaRadiolinaMusica',
   contactEmail: 'laradiolinaespaciomusical@gmail.com',
+  web3formsAccessKey: '468772a1-0268-450f-[#radiolina-default]',
   addressText: 'Costa del Este, Partido de La Costa, Buenos Aires',
   googleMapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12975.312957907572!2d-56.619018449999996!3d-36.6083072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959c00b9dcd8e411%3A0xb3557eefdbf7d3a0!2sCosta%20del%20Este%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar'
 };
