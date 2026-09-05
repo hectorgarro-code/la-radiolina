@@ -897,28 +897,30 @@ function MainContent() {
             </div>
 
             {/* TikTok Card */}
-            <div className="bg-[#161b22] border border-[#21262d] hover:border-cyan-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden">
-              <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-cyan-400 mb-4 shadow-lg">
-                  <TikTokIcon className="w-6 h-6" />
+            {siteTexts.tiktokUrl && (
+              <div className="bg-[#161b22] border border-[#21262d] hover:border-cyan-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden">
+                <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-cyan-400 mb-4 shadow-lg">
+                    <TikTokIcon className="w-6 h-6" />
+                  </div>
+                  <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">TikTok</span>
+                  <h3 className="text-xl font-bold text-white mt-1">@laradiolina</h3>
+                  <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                    Tips rápidos de guitarra y bajo, grooves de batería, ejercicios de ritmo y mini-lecciones dinámicas.
+                  </p>
                 </div>
-                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">TikTok</span>
-                <h3 className="text-xl font-bold text-white mt-1">@laradiolina</h3>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-                  Tips rápidos de guitarra y bajo, grooves de batería, ejercicios de ritmo y mini-lecciones dinámicas.
-                </p>
+                <a 
+                  href={siteTexts.tiktokUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="mt-6 w-full bg-[#0d1117] hover:bg-black text-cyan-400 border border-cyan-500/40 hover:border-cyan-400 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                >
+                  <TikTokIcon className="w-4 h-4" />
+                  <span>Ver Clips en TikTok</span>
+                </a>
               </div>
-              <a 
-                href={siteTexts.tiktokUrl || "https://tiktok.com/@laradiolina"} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="mt-6 w-full bg-[#0d1117] hover:bg-black text-cyan-400 border border-cyan-500/40 hover:border-cyan-400 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
-              >
-                <TikTokIcon className="w-4 h-4" />
-                <span>Ver Clips en TikTok</span>
-              </a>
-            </div>
+            )}
 
             {/* YouTube Card */}
             <div className="bg-[#161b22] border border-[#21262d] hover:border-red-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all hover:-translate-y-1 group relative overflow-hidden sm:col-span-2 lg:col-span-1">

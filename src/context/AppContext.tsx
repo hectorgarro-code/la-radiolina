@@ -60,7 +60,7 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   heroDescription: 'En La Radiolina contás con un estudio totalmente equipado. Venís sin nada, elegís tu instrumento preferido y aprendés a tu propio ritmo con clases personalizadas.',
   heroImageUrl: '/hero_electric_bass.jpg',
   instagramUrl: 'https://www.instagram.com/clasesdeguitarra_la_radiolina/',
-  tiktokUrl: 'https://tiktok.com/@laradiolina',
+  tiktokUrl: '',
   whatsappPhone: '542257416711',
   whatsappPhone2: '543416752299',
   anualPriceInfo: 'Consultar Arancel Mensual',
@@ -184,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Dynamic Data States loaded from localStorage
   // VERSION: bump this when you change DEFAULT_SITE_TEXTS to force a refresh
-  const TEXTS_VERSION = '2026-09-04-v2';
+  const TEXTS_VERSION = '2026-09-04-v3';
 
   const [siteTexts, setSiteTexts] = useState<SiteTexts>(() => {
     const savedVersion = localStorage.getItem('radiolina_texts_version');
