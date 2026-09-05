@@ -27,7 +27,11 @@ import {
   Youtube,
   MessageCircle,
   Mail,
-  MapPin
+  MapPin,
+  Download,
+  UploadCloud,
+  AlertTriangle,
+  Database
 } from 'lucide-react';
 import { AlumnoItem, RecursoItem, RadioSetItem } from '../data/mockData';
 
@@ -71,11 +75,44 @@ export const AdminPanel: React.FC = () => {
     updateEventoClub,
     cloudSyncState,
     cloudLastUpdated,
+    exportConfigJSON,
+    importConfigJSON,
     resetToDefaults
   } = useAppContext();
 
-  const [activeTab, setActiveTab] = useState<'textos' | 'alumnos' | 'recursos' | 'dial' | 'sets' | 'club' | 'planes'>('textos');
+  const [activeTab, setActiveTab] = useState<'textos' | 'alumnos' | 'recursos' | 'dial' | 'sets' | 'club' | 'planes' | 'respaldos'>('textos');
   const [saveNotification, setSaveNotification] = useState<string | null>(null);
+
+  const handleExportBackup = () => {
+    const jsonStr = exportConfigJSON();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `la_radiolina_config_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotify('¡Copia de seguridad (JSON) descargada con éxito!');
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        const success = importConfigJSON(reader.result);
+        if (success) {
+          showNotify('¡Configuración importada y aplicada con éxito!');
+        } else {
+          alert('El archivo seleccionado no es un respaldo válido de La Radiolina.');
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
 
   // New Item States
   const [newPlanPack, setNewPlanPack] = useState({
@@ -326,25 +363,40 @@ export const AdminPanel: React.FC = () => {
                   </span>
                 )}
                 {cloudSyncState === 'offline' && (
-                  <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                    📁 Guardado Local
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" title="Sincronización remota no configurada">
+                    <AlertTriangle className="w-3 h-3 text-amber-400" /> Guardado Local (Sin Nube)
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#8b949e]">Administración integral de La Radiolina — Los cambios se verán en cualquier dispositivo del mundo</p>
+              <p className="text-xs text-[#8b949e]">Administración integral de La Radiolina</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportBackup}
+              className="bg-[#21262d] hover:bg-[#30363d] text-gray-200 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-700 transition-colors flex items-center gap-1.5"
+              title="Descargar copia de seguridad en JSON"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-400" /> Respaldar JSON
+            </button>
+            <label
+              className="bg-[#21262d] hover:bg-[#30363d] text-gray-200 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-700 cursor-pointer transition-colors flex items-center gap-1.5"
+              title="Restaurar copia de seguridad desde un archivo JSON"
+            >
+              <UploadCloud className="w-3.5 h-3.5 text-cyan-400" /> Cargar JSON
+              <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+            </label>
+
             <button
               onClick={logoutAdmin}
-              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-bold px-3.5 py-1.5 rounded-lg border border-red-500/30 transition-colors"
+              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-bold px-3 py-1.5 rounded-lg border border-red-500/30 transition-colors ml-1"
             >
               Cerrar Sesión
             </button>
             <button
               onClick={() => setIsAdminOpen(false)}
-              className="text-gray-400 hover:text-white p-1 transition-colors"
+              className="text-gray-400 hover:text-white p-1 transition-colors ml-1"
               title="Cerrar panel"
             >
               <X className="w-6 h-6" />
@@ -356,6 +408,24 @@ export const AdminPanel: React.FC = () => {
         {saveNotification && (
           <div className="bg-emerald-500 text-black font-bold text-xs p-2.5 text-center flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4" /> {saveNotification}
+          </div>
+        )}
+
+        {/* Warning Banner when Cloud Sync is Offline */}
+        {cloudSyncState === 'offline' && (
+          <div className="bg-amber-500/10 border-b border-amber-500/30 px-5 py-2 flex items-center justify-between text-xs text-amber-200 shrink-0">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>
+                <strong>Atención:</strong> La sincronización remota en la nube no está configurada (falta la clave real de Firebase). Los cambios actuales se guardan en el navegador de esta computadora. Podés descargar o transferir tu configuración mediante <strong>Respaldar JSON</strong>.
+              </span>
+            </div>
+            <button
+              onClick={() => setActiveTab('respaldos')}
+              className="text-xs underline font-bold text-amber-300 hover:text-white ml-3 shrink-0"
+            >
+              Ver instrucciones Nube
+            </button>
           </div>
         )}
 
@@ -416,6 +486,14 @@ export const AdminPanel: React.FC = () => {
             }`}
           >
             <Layers className="w-3.5 h-3.5 text-indigo-400" /> Packs & Planes ({planPacks.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('respaldos')}
+            className={`px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'respaldos' ? 'bg-[#161b22] text-[#f59e0b] border-t-2 border-[#f59e0b]' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Database className="w-3.5 h-3.5 text-amber-400" /> Respaldos & Nube
           </button>
         </div>
 
@@ -1954,7 +2032,121 @@ export const AdminPanel: React.FC = () => {
             </div>
           )}
 
+          {/* TAB 8: Respaldos & Nube */}
+          {activeTab === 'respaldos' && (
+            <div className="space-y-6 max-w-3xl">
+              {/* Sección Copia de Seguridad */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white">Copias de Seguridad & Transferencia entre PCs</h4>
+                    <p className="text-xs text-gray-400">Exportá o importá todo el contenido del sitio (textos, alumnos, recursos, dial, planes) en un archivo JSON.</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                  <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                      <h5 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+                        <Download className="w-4 h-4" /> Exportar Respaldo
+                      </h5>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Descargá un archivo <code>.json</code> con la configuración actual completa para guardarla como copia de seguridad o llevarla a otra computadora.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleExportBackup}
+                      className="w-full bg-[#f59e0b] hover:bg-amber-400 text-black font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-colors"
+                    >
+                      <Download className="w-4 h-4" /> Descargar Copia JSON
+                    </button>
+                  </div>
+
+                  <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                      <h5 className="text-sm font-bold text-cyan-400 flex items-center gap-2">
+                        <UploadCloud className="w-4 h-4" /> Importar / Cargar Respaldo
+                      </h5>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Seleccioná un archivo <code>.json</code> previamente descargado para restaurar la configuración completa en este sitio.
+                      </p>
+                    </div>
+                    <label className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-lg">
+                      <UploadCloud className="w-4 h-4" /> Seleccionar Archivo JSON
+                      <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Diagnóstico Nube & Credenciales */}
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+                <h4 className="text-sm font-bold text-[#f59e0b] uppercase tracking-wider flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-amber-400" /> Diagnóstico de Sincronización en Tiempo Real
+                </h4>
+
+                <div className="bg-[#161b22] p-4 rounded-xl border border-[#21262d] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-300 font-semibold">Estado Actual del Servidor Remoto:</span>
+                    {cloudSyncState === 'synced' && (
+                      <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4" /> Nube Conectada y Sincronizada 🌐
+                      </span>
+                    )}
+                    {cloudSyncState === 'offline' && (
+                      <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" /> Sin Conexión Nube (Modo Local)
+                      </span>
+                    )}
+                    {cloudSyncState === 'syncing' && (
+                      <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 animate-pulse">
+                        <RefreshCw className="w-4 h-4 animate-spin text-amber-400" /> Sincronizando...
+                      </span>
+                    )}
+                  </div>
+
+                  {cloudSyncState === 'offline' && (
+                    <div className="text-xs text-gray-300 space-y-2 pt-2 border-t border-[#21262d]">
+                      <p className="text-amber-300 font-bold">
+                        ¿Por qué los cambios guardados desde una computadora no aparecen en otra?
+                      </p>
+                      <p className="text-gray-400 leading-relaxed">
+                        Actualmente el sitio no tiene vinculada una base de datos remota real en la nube. Por lo tanto, los cambios guardados mediante el botón "Guardar Configuración" quedan guardados en el navegador local (LocalStorage) de esta máquina.
+                      </p>
+                      
+                      <div className="bg-black/40 p-3 rounded-lg border border-white/5 space-y-1.5">
+                        <h6 className="font-bold text-white text-xs">Cómo activar la Sincronización Automática entre computadoras:</h6>
+                        <ol className="list-decimal list-inside text-[11px] text-gray-300 space-y-1">
+                          <li>Crear un proyecto gratuito en <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-amber-400 underline">Firebase Console</a> y activar Firestore Database.</li>
+                          <li>En la configuración del hosting (Vercel o archivo <code>.env</code>), agregar las siguientes variables de entorno:
+                            <pre className="bg-[#0d1117] p-2 rounded text-[10px] text-amber-300 font-mono mt-1 overflow-x-auto">
+                              VITE_FIREBASE_API_KEY="tu_api_key_real"<br/>
+                              VITE_FIREBASE_PROJECT_ID="radiolina-musica"<br/>
+                              VITE_FIREBASE_AUTH_DOMAIN="radiolina-musica.firebaseapp.com"
+                            </pre>
+                          </li>
+                          <li>Una vez agregadas las variables, cualquier cambio realizado desde cualquier PC del mundo se actualizará automáticamente en todas las demás en tiempo real.</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+
+                  {cloudSyncState === 'synced' && (
+                    <p className="text-xs text-emerald-400">
+                      ¡Todo perfecto! Todos los cambios que realices desde este panel se reflejan instantáneamente en cualquier computadora o teléfono móvil del mundo.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
+
 
       </div>
     </div>

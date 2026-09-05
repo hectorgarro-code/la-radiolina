@@ -9,13 +9,14 @@ import {
 
 // Configuration can come from environment variables or direct config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSy_demo_radiolina_key",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyD4FFxzQXy244K_HIS-uZiRyQivJ3p-kM",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "radiolina-musica.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "radiolina-musica",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "radiolina-musica.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "100000000000",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:100000000000:web:abcdef123456"
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "radiolina-musica.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "317141189190",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:317141189190:web:d419fec7ad9296f926c047"
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -36,10 +37,19 @@ export interface FullSiteData {
   updatedAt?: string;
 }
 
+export function isFirebaseConfigured(): boolean {
+  const key = firebaseConfig.apiKey;
+  return Boolean(key && !key.includes('demo') && key.length > 20);
+}
+
 /**
  * Fetch complete site data from Cloud (Firestore)
  */
 export async function fetchCloudSiteData(): Promise<FullSiteData | null> {
+  if (!isFirebaseConfigured()) {
+    console.info('[Cloud Storage] Firebase no está configurado con credenciales reales (usando demo key).');
+    return null;
+  }
   try {
     const docRef = doc(db, CONFIG_DOC_PATH[0], CONFIG_DOC_PATH[1]);
     const docSnap = await getDoc(docRef);
@@ -47,7 +57,7 @@ export async function fetchCloudSiteData(): Promise<FullSiteData | null> {
       return docSnap.data() as FullSiteData;
     }
   } catch (error) {
-    console.warn('[Cloud Storage] Firebase fetch failed or not configured, falling back to local/REST:', error);
+    console.warn('[Cloud Storage] Firebase fetch failed or invalid credentials:', error);
   }
   return null;
 }
@@ -56,6 +66,10 @@ export async function fetchCloudSiteData(): Promise<FullSiteData | null> {
  * Save complete site data to Cloud (Firestore)
  */
 export async function saveCloudSiteData(data: Partial<FullSiteData>): Promise<boolean> {
+  if (!isFirebaseConfigured()) {
+    console.info('[Cloud Storage] No se puede guardar en Firebase: credenciales no configuradas.');
+    return false;
+  }
   try {
     const docRef = doc(db, CONFIG_DOC_PATH[0], CONFIG_DOC_PATH[1]);
     await setDoc(docRef, {
@@ -74,6 +88,9 @@ export async function saveCloudSiteData(data: Partial<FullSiteData>): Promise<bo
  * Subscribe to real-time changes in Firestore
  */
 export function subscribeToCloudSiteData(onUpdate: (data: FullSiteData) => void): () => void {
+  if (!isFirebaseConfigured()) {
+    return () => {};
+  }
   try {
     const docRef = doc(db, CONFIG_DOC_PATH[0], CONFIG_DOC_PATH[1]);
     return onSnapshot(docRef, (docSnap) => {
@@ -88,3 +105,4 @@ export function subscribeToCloudSiteData(onUpdate: (data: FullSiteData) => void)
     return () => {};
   }
 }
+

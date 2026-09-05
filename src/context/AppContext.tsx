@@ -172,6 +172,9 @@ interface AppContextType {
   cloudSyncState: 'synced' | 'syncing' | 'offline';
   cloudLastUpdated?: string;
 
+  exportConfigJSON: () => string;
+  importConfigJSON: (jsonString: string) => boolean;
+
   resetToDefaults: () => void;
 }
 
@@ -185,19 +188,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cloudLastUpdated, setCloudLastUpdated] = useState<string | undefined>(undefined);
 
   // Dynamic Data States loaded from localStorage
-  // VERSION: bump this when you change DEFAULT_SITE_TEXTS to force a refresh
   const TEXTS_VERSION = '2026-09-04-v3';
 
   const [siteTexts, setSiteTexts] = useState<SiteTexts>(() => {
-    const savedVersion = localStorage.getItem('radiolina_texts_version');
     const saved = localStorage.getItem('radiolina_texts');
-    // If version mismatch, discard saved texts and use new defaults
-    if (savedVersion !== TEXTS_VERSION || !saved) {
-      localStorage.removeItem('radiolina_texts');
-      localStorage.setItem('radiolina_texts_version', TEXTS_VERSION);
-      return DEFAULT_SITE_TEXTS;
+    if (saved) {
+      try {
+        return { ...DEFAULT_SITE_TEXTS, ...JSON.parse(saved) };
+      } catch (e) {}
     }
-    return { ...DEFAULT_SITE_TEXTS, ...JSON.parse(saved) };
+    return DEFAULT_SITE_TEXTS;
   });
 
   const [estudioInstrumentos, setEstudioInstrumentos] = useState<EstudioInstrumento[]>(() => {
@@ -240,21 +240,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let isMounted = true;
     setCloudSyncState('syncing');
 
-    loadGlobalSiteConfig().then((cloudData) => {
-      if (!isMounted || !cloudData) {
-        if (isMounted) setCloudSyncState('synced');
-        return;
+    loadGlobalSiteConfig().then(({ data: cloudData, source }) => {
+      if (!isMounted) return;
+      if (cloudData) {
+        if (cloudData.siteTexts) setSiteTexts(prev => ({ ...prev, ...cloudData.siteTexts }));
+        if (cloudData.estudioInstrumentos) setEstudioInstrumentos(cloudData.estudioInstrumentos);
+        if (cloudData.planPacks) setPlanPacks(cloudData.planPacks);
+        if (cloudData.alumnos) setAlumnos(cloudData.alumnos);
+        if (cloudData.recursos) setRecursos(cloudData.recursos);
+        if (cloudData.dialChannels) setDialChannels(cloudData.dialChannels);
+        if (cloudData.radioSets) setRadioSets(cloudData.radioSets);
+        if (cloudData.eventoClub) setEventoClub(cloudData.eventoClub);
+        if (cloudData.updatedAt) setCloudLastUpdated(cloudData.updatedAt);
       }
-      if (cloudData.siteTexts) setSiteTexts(prev => ({ ...prev, ...cloudData.siteTexts }));
-      if (cloudData.estudioInstrumentos) setEstudioInstrumentos(cloudData.estudioInstrumentos);
-      if (cloudData.planPacks) setPlanPacks(cloudData.planPacks);
-      if (cloudData.alumnos) setAlumnos(cloudData.alumnos);
-      if (cloudData.recursos) setRecursos(cloudData.recursos);
-      if (cloudData.dialChannels) setDialChannels(cloudData.dialChannels);
-      if (cloudData.radioSets) setRadioSets(cloudData.radioSets);
-      if (cloudData.eventoClub) setEventoClub(cloudData.eventoClub);
-      if (cloudData.updatedAt) setCloudLastUpdated(cloudData.updatedAt);
-      setCloudSyncState('synced');
+      
+      if (source === 'firebase' || source === 'rest') {
+        setCloudSyncState('synced');
+      } else {
+        setCloudSyncState('offline');
+      }
     }).catch(err => {
       console.warn('[AppContext] Could not fetch global cloud data:', err);
       if (isMounted) setCloudSyncState('offline');
@@ -329,9 +333,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         eventoClub,
         ...partialPayload
       };
-      await saveGlobalSiteConfig(payload);
-      setCloudSyncState('synced');
-      setCloudLastUpdated(new Date().toISOString());
+      const res = await saveGlobalSiteConfig(payload);
+      if (res.success && (res.cloud === 'firebase' || res.cloud === 'rest')) {
+        setCloudSyncState('synced');
+        setCloudLastUpdated(new Date().toISOString());
+      } else {
+        setCloudSyncState('offline');
+      }
     } catch (err) {
       console.error('[AppContext] Failed pushing to cloud:', err);
       setCloudSyncState('offline');
@@ -501,6 +509,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const exportConfigJSON = (): string => {
+    const fullData = {
+      siteTexts,
+      estudioInstrumentos,
+      planPacks,
+      alumnos,
+      recursos,
+      dialChannels,
+      radioSets,
+      eventoClub,
+      exportedAt: new Date().toISOString(),
+      version: TEXTS_VERSION
+    };
+    return JSON.stringify(fullData, null, 2);
+  };
+
+  const importConfigJSON = (jsonString: string): boolean => {
+    try {
+      const data = JSON.parse(jsonString);
+      if (!data || typeof data !== 'object') return false;
+
+      if (data.siteTexts) setSiteTexts(data.siteTexts);
+      if (data.estudioInstrumentos) setEstudioInstrumentos(data.estudioInstrumentos);
+      if (data.planPacks) setPlanPacks(data.planPacks);
+      if (data.alumnos) setAlumnos(data.alumnos);
+      if (data.recursos) setRecursos(data.recursos);
+      if (data.dialChannels) setDialChannels(data.dialChannels);
+      if (data.radioSets) setRadioSets(data.radioSets);
+      if (data.eventoClub) setEventoClub(data.eventoClub);
+
+      pushCloudSync(data);
+      return true;
+    } catch (err) {
+      console.error('Failed importing config JSON:', err);
+      return false;
+    }
+  };
+
   const resetToDefaults = () => {
     setSiteTexts(DEFAULT_SITE_TEXTS);
     setEstudioInstrumentos(DEFAULT_ESTUDIO_INSTRUMENTOS);
@@ -549,11 +595,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateEventoClub,
       cloudSyncState,
       cloudLastUpdated,
+      exportConfigJSON,
+      importConfigJSON,
       resetToDefaults
     }}>
       {children}
     </AppContext.Provider>
   );
+
 };
 
 export const useAppContext = () => {
