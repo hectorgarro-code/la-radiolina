@@ -10,6 +10,12 @@ import {
   MOCK_EVENTO_CLUB 
 } from '../data/mockData';
 
+import { 
+  loadGlobalSiteConfig, 
+  saveGlobalSiteConfig, 
+  listenToGlobalChanges 
+} from '../services/cloudStorage';
+
 export interface DialChannel {
   freq: string;
   genre: string;
@@ -28,6 +34,7 @@ export interface SiteTexts {
   instagramUrl?: string;
   tiktokUrl?: string;
   whatsappPhone: string;
+  whatsappPhone2?: string;
   anualPriceInfo: string;
   veranoPriceInfo: string;
   discordUrl: string;
@@ -52,14 +59,15 @@ const DEFAULT_SITE_TEXTS: SiteTexts = {
   heroHighlight: 'Todos los instrumentos en un solo lugar.',
   heroDescription: 'En La Radiolina contás con un estudio totalmente equipado. Venís sin nada, elegís tu instrumento preferido y aprendés a tu propio ritmo con clases personalizadas.',
   heroImageUrl: '/hero_electric_bass.jpg',
-  instagramUrl: 'https://instagram.com/laradiolina',
+  instagramUrl: 'https://www.instagram.com/clasesdeguitarra_la_radiolina/',
   tiktokUrl: 'https://tiktok.com/@laradiolina',
-  whatsappPhone: '5491112345678',
+  whatsappPhone: '542257416711',
+  whatsappPhone2: '543416752299',
   anualPriceInfo: 'Consultar Arancel Mensual',
   veranoPriceInfo: 'Consultar Disponibilidad Verano',
-  discordUrl: 'https://discord.gg/radiolina',
-  youtubeChannelUrl: 'https://www.youtube.com/@laradiolina',
-  contactEmail: 'contacto@laradiolina.com',
+  discordUrl: 'https://discord.com/channels/@me',
+  youtubeChannelUrl: 'https://www.youtube.com/@LaRadiolinaMusica',
+  contactEmail: 'laradiolinaespaciomusical@gmail.com',
   addressText: 'Costa del Este, Partido de La Costa, Buenos Aires',
   googleMapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12975.312957907572!2d-56.619018449999996!3d-36.6083072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959c00b9dcd8e411%3A0xb3557eefdbf7d3a0!2sCosta%20del%20Este%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar'
 };
@@ -159,6 +167,9 @@ interface AppContextType {
   eventoClub: EventoClub;
   updateEventoClub: (evento: Partial<EventoClub>) => void;
 
+  cloudSyncState: 'synced' | 'syncing' | 'offline';
+  cloudLastUpdated?: string;
+
   resetToDefaults: () => void;
 }
 
@@ -168,10 +179,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
 
+  const [cloudSyncState, setCloudSyncState] = useState<'synced' | 'syncing' | 'offline'>('synced');
+  const [cloudLastUpdated, setCloudLastUpdated] = useState<string | undefined>(undefined);
+
   // Dynamic Data States loaded from localStorage
+  // VERSION: bump this when you change DEFAULT_SITE_TEXTS to force a refresh
+  const TEXTS_VERSION = '2026-09-04-v2';
+
   const [siteTexts, setSiteTexts] = useState<SiteTexts>(() => {
+    const savedVersion = localStorage.getItem('radiolina_texts_version');
     const saved = localStorage.getItem('radiolina_texts');
-    return saved ? { ...DEFAULT_SITE_TEXTS, ...JSON.parse(saved) } : DEFAULT_SITE_TEXTS;
+    // If version mismatch, discard saved texts and use new defaults
+    if (savedVersion !== TEXTS_VERSION || !saved) {
+      localStorage.removeItem('radiolina_texts');
+      localStorage.setItem('radiolina_texts_version', TEXTS_VERSION);
+      return DEFAULT_SITE_TEXTS;
+    }
+    return { ...DEFAULT_SITE_TEXTS, ...JSON.parse(saved) };
   });
 
   const [estudioInstrumentos, setEstudioInstrumentos] = useState<EstudioInstrumento[]>(() => {
@@ -209,7 +233,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : MOCK_EVENTO_CLUB;
   });
 
-  // Save changes to LocalStorage
+  // Load from Global Cloud Database on startup
+  useEffect(() => {
+    let isMounted = true;
+    setCloudSyncState('syncing');
+
+    loadGlobalSiteConfig().then((cloudData) => {
+      if (!isMounted || !cloudData) {
+        if (isMounted) setCloudSyncState('synced');
+        return;
+      }
+      if (cloudData.siteTexts) setSiteTexts(prev => ({ ...prev, ...cloudData.siteTexts }));
+      if (cloudData.estudioInstrumentos) setEstudioInstrumentos(cloudData.estudioInstrumentos);
+      if (cloudData.planPacks) setPlanPacks(cloudData.planPacks);
+      if (cloudData.alumnos) setAlumnos(cloudData.alumnos);
+      if (cloudData.recursos) setRecursos(cloudData.recursos);
+      if (cloudData.dialChannels) setDialChannels(cloudData.dialChannels);
+      if (cloudData.radioSets) setRadioSets(cloudData.radioSets);
+      if (cloudData.eventoClub) setEventoClub(cloudData.eventoClub);
+      if (cloudData.updatedAt) setCloudLastUpdated(cloudData.updatedAt);
+      setCloudSyncState('synced');
+    }).catch(err => {
+      console.warn('[AppContext] Could not fetch global cloud data:', err);
+      if (isMounted) setCloudSyncState('offline');
+    });
+
+    // Real-time listener
+    const unsubscribe = listenToGlobalChanges((cloudData) => {
+      if (!isMounted || !cloudData) return;
+      if (cloudData.siteTexts) setSiteTexts(prev => ({ ...prev, ...cloudData.siteTexts }));
+      if (cloudData.estudioInstrumentos) setEstudioInstrumentos(cloudData.estudioInstrumentos);
+      if (cloudData.planPacks) setPlanPacks(cloudData.planPacks);
+      if (cloudData.alumnos) setAlumnos(cloudData.alumnos);
+      if (cloudData.recursos) setRecursos(cloudData.recursos);
+      if (cloudData.dialChannels) setDialChannels(cloudData.dialChannels);
+      if (cloudData.radioSets) setRadioSets(cloudData.radioSets);
+      if (cloudData.eventoClub) setEventoClub(cloudData.eventoClub);
+      if (cloudData.updatedAt) setCloudLastUpdated(cloudData.updatedAt);
+      setCloudSyncState('synced');
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  // Save changes to LocalStorage as instant local cache
   useEffect(() => {
     localStorage.setItem('radiolina_texts', JSON.stringify(siteTexts));
   }, [siteTexts]);
@@ -242,6 +312,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('radiolina_evento', JSON.stringify(eventoClub));
   }, [eventoClub]);
 
+  // Helper to push state changes to Global Cloud Database
+  const pushCloudSync = async (partialPayload: any) => {
+    setCloudSyncState('syncing');
+    try {
+      const payload = {
+        siteTexts,
+        estudioInstrumentos,
+        planPacks,
+        alumnos,
+        recursos,
+        dialChannels,
+        radioSets,
+        eventoClub,
+        ...partialPayload
+      };
+      await saveGlobalSiteConfig(payload);
+      setCloudSyncState('synced');
+      setCloudLastUpdated(new Date().toISOString());
+    } catch (err) {
+      console.error('[AppContext] Failed pushing to cloud:', err);
+      setCloudSyncState('offline');
+    }
+  };
+
   const loginAdmin = (pass: string) => {
     if (pass === 'radiolina2026' || pass === 'admin123') {
       setIsAdminLoggedIn(true);
@@ -256,84 +350,153 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateSiteTexts = (texts: Partial<SiteTexts>) => {
-    setSiteTexts(prev => ({ ...prev, ...texts }));
+    setSiteTexts(prev => {
+      const updated = { ...prev, ...texts };
+      pushCloudSync({ siteTexts: updated });
+      return updated;
+    });
   };
 
   const addEstudioInstrumento = (item: Omit<EstudioInstrumento, 'id'>) => {
     const newItem: EstudioInstrumento = { ...item, id: Date.now().toString() };
-    setEstudioInstrumentos(prev => [...prev, newItem]);
+    setEstudioInstrumentos(prev => {
+      const updated = [...prev, newItem];
+      pushCloudSync({ estudioInstrumentos: updated });
+      return updated;
+    });
   };
 
   const updateEstudioInstrumento = (id: string, item: Partial<EstudioInstrumento>) => {
-    setEstudioInstrumentos(prev => prev.map(inst => inst.id === id ? { ...inst, ...item } : inst));
+    setEstudioInstrumentos(prev => {
+      const updated = prev.map(inst => inst.id === id ? { ...inst, ...item } : inst);
+      pushCloudSync({ estudioInstrumentos: updated });
+      return updated;
+    });
   };
 
   const deleteEstudioInstrumento = (id: string) => {
-    setEstudioInstrumentos(prev => prev.filter(inst => inst.id !== id));
+    setEstudioInstrumentos(prev => {
+      const updated = prev.filter(inst => inst.id !== id);
+      pushCloudSync({ estudioInstrumentos: updated });
+      return updated;
+    });
   };
 
   const addPlanPack = (item: Omit<PlanPack, 'id'>) => {
     const newItem: PlanPack = { ...item, id: Date.now().toString() };
-    setPlanPacks(prev => [...prev, newItem]);
+    setPlanPacks(prev => {
+      const updated = [...prev, newItem];
+      pushCloudSync({ planPacks: updated });
+      return updated;
+    });
   };
 
   const updatePlanPack = (id: string, item: Partial<PlanPack>) => {
-    setPlanPacks(prev => prev.map(p => p.id === id ? { ...p, ...item } : p));
+    setPlanPacks(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, ...item } : p);
+      pushCloudSync({ planPacks: updated });
+      return updated;
+    });
   };
 
   const deletePlanPack = (id: string) => {
-    setPlanPacks(prev => prev.filter(p => p.id !== id));
+    setPlanPacks(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      pushCloudSync({ planPacks: updated });
+      return updated;
+    });
   };
 
   const addAlumno = (item: Omit<AlumnoItem, 'id'>) => {
     const newItem: AlumnoItem = { ...item, id: Date.now().toString() };
-    setAlumnos(prev => [newItem, ...prev]);
+    setAlumnos(prev => {
+      const updated = [newItem, ...prev];
+      pushCloudSync({ alumnos: updated });
+      return updated;
+    });
   };
 
   const updateAlumno = (id: string, item: Partial<AlumnoItem>) => {
-    setAlumnos(prev => prev.map(a => a.id === id ? { ...a, ...item } : a));
+    setAlumnos(prev => {
+      const updated = prev.map(a => a.id === id ? { ...a, ...item } : a);
+      pushCloudSync({ alumnos: updated });
+      return updated;
+    });
   };
 
   const deleteAlumno = (id: string) => {
-    setAlumnos(prev => prev.filter(a => a.id !== id));
+    setAlumnos(prev => {
+      const updated = prev.filter(a => a.id !== id);
+      pushCloudSync({ alumnos: updated });
+      return updated;
+    });
   };
 
   const addRecurso = (item: Omit<RecursoItem, 'id'>) => {
     const newItem: RecursoItem = { ...item, id: Date.now().toString() };
-    setRecursos(prev => [newItem, ...prev]);
+    setRecursos(prev => {
+      const updated = [newItem, ...prev];
+      pushCloudSync({ recursos: updated });
+      return updated;
+    });
   };
 
   const updateRecurso = (id: string, item: Partial<RecursoItem>) => {
-    setRecursos(prev => prev.map(r => r.id === id ? { ...r, ...item } : r));
+    setRecursos(prev => {
+      const updated = prev.map(r => r.id === id ? { ...r, ...item } : r);
+      pushCloudSync({ recursos: updated });
+      return updated;
+    });
   };
 
   const deleteRecurso = (id: string) => {
-    setRecursos(prev => prev.filter(r => r.id !== id));
+    setRecursos(prev => {
+      const updated = prev.filter(r => r.id !== id);
+      pushCloudSync({ recursos: updated });
+      return updated;
+    });
   };
 
   const updateDialChannel = (index: number, channel: Partial<DialChannel>) => {
     setDialChannels(prev => {
       const copy = [...prev];
       copy[index] = { ...copy[index], ...channel };
+      pushCloudSync({ dialChannels: copy });
       return copy;
     });
   };
 
   const addRadioSet = (item: Omit<RadioSetItem, 'id'>) => {
     const newItem: RadioSetItem = { ...item, id: Date.now().toString() };
-    setRadioSets(prev => [newItem, ...prev]);
+    setRadioSets(prev => {
+      const updated = [newItem, ...prev];
+      pushCloudSync({ radioSets: updated });
+      return updated;
+    });
   };
 
   const updateRadioSet = (id: string, item: Partial<RadioSetItem>) => {
-    setRadioSets(prev => prev.map(s => s.id === id ? { ...s, ...item } : s));
+    setRadioSets(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...item } : s);
+      pushCloudSync({ radioSets: updated });
+      return updated;
+    });
   };
 
   const deleteRadioSet = (id: string) => {
-    setRadioSets(prev => prev.filter(s => s.id !== id));
+    setRadioSets(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      pushCloudSync({ radioSets: updated });
+      return updated;
+    });
   };
 
   const updateEventoClub = (evento: Partial<EventoClub>) => {
-    setEventoClub(prev => ({ ...prev, ...evento }));
+    setEventoClub(prev => {
+      const updated = { ...prev, ...evento };
+      pushCloudSync({ eventoClub: updated });
+      return updated;
+    });
   };
 
   const resetToDefaults = () => {
@@ -346,6 +509,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRadioSets(MOCK_RADIO_SETS);
     setEventoClub(MOCK_EVENTO_CLUB);
     localStorage.clear();
+    localStorage.setItem('radiolina_texts_version', TEXTS_VERSION);
   };
 
   return (
@@ -381,6 +545,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteRadioSet,
       eventoClub,
       updateEventoClub,
+      cloudSyncState,
+      cloudLastUpdated,
       resetToDefaults
     }}>
       {children}

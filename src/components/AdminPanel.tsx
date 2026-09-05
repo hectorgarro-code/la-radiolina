@@ -69,6 +69,8 @@ export const AdminPanel: React.FC = () => {
     deleteRadioSet,
     eventoClub,
     updateEventoClub,
+    cloudSyncState,
+    cloudLastUpdated,
     resetToDefaults
   } = useAppContext();
 
@@ -311,8 +313,25 @@ export const AdminPanel: React.FC = () => {
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white leading-tight">Panel de Control & CMS</h3>
-              <p className="text-xs text-[#8b949e]">Administración integral de La Radiolina</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white leading-tight">Panel de Control & CMS</h3>
+                {cloudSyncState === 'syncing' && (
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                    <RefreshCw className="w-3 h-3 animate-spin" /> Guardando en Nube...
+                  </span>
+                )}
+                {cloudSyncState === 'synced' && (
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" title={cloudLastUpdated ? `Última sincronización: ${new Date(cloudLastUpdated).toLocaleTimeString()}` : 'Sincronizado globalmente'}>
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Nube Global Activa 🌐
+                  </span>
+                )}
+                {cloudSyncState === 'offline' && (
+                  <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    📁 Guardado Local
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#8b949e]">Administración integral de La Radiolina — Los cambios se verán en cualquier dispositivo del mundo</p>
             </div>
           </div>
 
@@ -644,21 +663,36 @@ export const AdminPanel: React.FC = () => {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 mb-1">Número de WhatsApp (con código de país)</label>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Número WhatsApp Principal (con código país)</label>
                     <input
                       type="text"
-                      placeholder="ej: 5491112345678"
+                      placeholder="ej: 542257416711"
                       value={siteTexts.whatsappPhone}
                       onChange={(e) => updateSiteTexts({ whatsappPhone: e.target.value })}
                       className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
                     />
+                    <p className="text-[11px] text-gray-500 mt-1">Ejemplo: 54 + código área sin 0 + número (542257416711)</p>
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">Número WhatsApp Alternativo (opcional)</label>
+                    <input
+                      type="text"
+                      placeholder="ej: 543416752299"
+                      value={siteTexts.whatsappPhone2 || ''}
+                      onChange={(e) => updateSiteTexts({ whatsappPhone2: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
+                    />
+                    <p className="text-[11px] text-gray-500 mt-1">Número de contacto secundario (sin código de país)</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-300 mb-1">Email de Destino para Consultas</label>
                     <input
                       type="email"
-                      placeholder="ej: contacto@laradiolina.com"
+                      placeholder="ej: laradiolinaespaciomusical@gmail.com"
                       value={siteTexts.contactEmail || ''}
                       onChange={(e) => updateSiteTexts({ contactEmail: e.target.value })}
                       className="w-full bg-[#161b22] border border-[#21262d] rounded-xl px-4 py-2.5 text-white text-sm"
