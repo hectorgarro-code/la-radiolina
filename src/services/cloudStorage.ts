@@ -11,12 +11,14 @@ const CUSTOM_REST_ENDPOINT = import.meta.env.VITE_CLOUD_STORAGE_URL;
  */
 export async function loadGlobalSiteConfig(): Promise<{ data: FullSiteData | null; source: 'firebase' | 'rest' | 'local' | 'none' }> {
   // 1. Try Firebase Firestore
-  const firestoreData = await fetchCloudSiteData();
-  if (firestoreData) {
-    // Cache locally for instant next load
-    localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(firestoreData));
+  const { data: firestoreData, connected } = await fetchCloudSiteData();
+  if (connected) {
+    if (firestoreData) {
+      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(firestoreData));
+    }
     return { data: firestoreData, source: 'firebase' };
   }
+
 
   // 2. Try REST Cloud Endpoint fallback if valid custom endpoint is configured
   if (CUSTOM_REST_ENDPOINT && CUSTOM_REST_ENDPOINT.startsWith('http')) {

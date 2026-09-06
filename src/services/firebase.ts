@@ -45,22 +45,24 @@ export function isFirebaseConfigured(): boolean {
 /**
  * Fetch complete site data from Cloud (Firestore)
  */
-export async function fetchCloudSiteData(): Promise<FullSiteData | null> {
+export async function fetchCloudSiteData(): Promise<{ data: FullSiteData | null; connected: boolean }> {
   if (!isFirebaseConfigured()) {
-    console.info('[Cloud Storage] Firebase no está configurado con credenciales reales (usando demo key).');
-    return null;
+    console.info('[Cloud Storage] Firebase no está configurado con credenciales reales.');
+    return { data: null, connected: false };
   }
   try {
     const docRef = doc(db, CONFIG_DOC_PATH[0], CONFIG_DOC_PATH[1]);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      return docSnap.data() as FullSiteData;
+      return { data: docSnap.data() as FullSiteData, connected: true };
     }
+    return { data: null, connected: true };
   } catch (error) {
-    console.warn('[Cloud Storage] Firebase fetch failed or invalid credentials:', error);
+    console.warn('[Cloud Storage] Firebase fetch failed or permission denied:', error);
+    return { data: null, connected: false };
   }
-  return null;
 }
+
 
 /**
  * Save complete site data to Cloud (Firestore)
